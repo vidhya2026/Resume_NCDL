@@ -1,0 +1,353 @@
+﻿@* ============================================================
+   Views/ResumeMatcher/Index.cshtml
+   ============================================================ *@
+@model Resume_NCDL.Models.ResumeMatcherViewModel
+@{
+    ViewData["Title"] = "Resume Matcher";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resume Matcher</title>
+</head>
+<body>
+
+    <h2>Resume Matcher</h2>
+
+    @* ── ERROR ── *@
+    @if (!string.IsNullOrEmpty(Model.ErrorMsg))
+    {
+        <div style="color: red; margin: 10px 0; padding: 10px; border: 1px solid red;">@Model.ErrorMsg</div>
+    }
+
+    @* ── FORM ── *@
+    <div style="border: 1px solid #ccc; padding: 20px; margin-bottom: 20px;">
+        <form asp-action="Analyze" asp-controller="ResumeMatcher"
+              method="post" enctype="multipart/form-data" id="matchForm">
+
+            <div style="margin-bottom: 15px;">
+                <label><strong>Job Description</strong> <span style="color:red">*</span></label><br />
+                <textarea name="JdText" rows="7" style="width: 100%;"
+                          placeholder="Paste the full job description here..."
+                          required>@Model.JdText</textarea>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label><strong>Match Threshold (%)</strong></label><br />
+                <input type="number" name="Threshold" min="1" max="100" value="@Model.Threshold" />
+                <div style="font-size: 12px; color: #666;">
+                    Resumes scoring above this % are marked Matched. Default: 40<br />
+                    Score bands: Good ≥60% | Medium 50–59% | Low 40–49% | Not Matched &lt;40%
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label><strong>Upload Resumes (PDF / DOCX / TXT)</strong> <span style="color:red">*</span></label><br />
+                <input type="file" name="Resumes" id="resumeFiles"
+                       accept=".pdf,.docx,.txt" multiple required />
+                <div style="font-size: 12px; color: #666;">You can select multiple files at once.</div>
+                <div id="fileNames" style="margin-top:8px;font-size:13px;"></div>
+            </div>
+
+            <button type="submit" id="submitBtn" style="padding: 8px 20px; cursor: pointer;">
+                Analyse Resumes
+            </button>
+            <div id="loadingMsg" style="display: none; margin-top: 10px; color: blue;">
+                Analysing resumes... Please wait, this may take a minute.
+            </div>
+        </form>
+    </div>
+
+    @* ── RESULTS ── *@
+    @if (Model.ApiResult != null)
+    {
+        var api = Model.ApiResult;
+        var results = api.Results.OrderByDescending(x => x.Score).ToList();
+
+        <div style="margin-top: 20px;">
+
+            <!-- Header -->
+            <div style="background: #333; color: white; padding: 10px; font-weight: bold;">
+                RESUME MATCHING REPORT | Threshold: @api.Threshold%
+            </div>
+
+            <!-- Stats bar -->
+            <div style="background: #f0f0f0; padding: 10px; border: 1px solid #ddd; border-top: none;">
+                <strong>Total:</strong> @api.Total &nbsp;|&nbsp;
+                <strong>Matched:</strong> @api.Matched &nbsp;|&nbsp;
+                <strong>Not Matched:</strong> @api.NotMatched
+                @if (api.NearMisses > 0)
+                {
+                    <text>&nbsp;|&nbsp; <strong>Near Misses:</strong> @api.NearMisses</text>
+                }
+                @if (api.WrongProfiles > 0)
+                {
+                    <text>&nbsp;|&nbsp; <strong>Wrong Profiles:</strong> @api.WrongProfiles</text>
+                }
+                @if (api.DomainMismatches > 0)
+                {
+                    <text>&nbsp;|&nbsp; <strong>Domain Mismatches:</strong> @api.DomainMismatches</text>
+                }
+            </div>
+
+            <!-- Tier summary -->
+            @if (api.TierSummary != null && api.TierSummary.Count > 0)
+            {
+                <div style="background: #fafafa; padding: 10px; border: 1px solid #ddd; border-top: none;">
+                    <strong>TIER BREAKDOWN:</strong>
+                    @foreach (var kv in api.TierSummary)
+                    {
+                        <text> @kv.Key : @kv.Value &nbsp;|&nbsp;</text>
+                    }
+                </div>
+            }
+
+            <!-- Result cards -->
+            @foreach (var res in results)
+            {
+                bool isErr = res.Error != null;
+
+                @* ── FIX 1: Detect invalid document BEFORE checking CandidateType ── *@
+                @* The Python API sets Status = "INVALID DOCUMENT" for garbage/empty files *@
+                bool isInvalid = !isErr && (
+                    string.Equals(res.Status, "INVALID DOCUMENT", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(res.Tier, "⚠️ Invalid Document", StringComparison.OrdinalIgnoreCase)
+                    || (res.Name == "N/A" && res.Experience == "N/A" && res.CandidateType == "N/A")
+                );
+
+                @* ── FIX 2: Only check isFresher when the doc is actually valid ── *@
+                @* Previously "N/A" != "Fresher" → fell through to show "Experienced" *@
+                bool isFresher = !isInvalid && !isErr &&
+                                 res.CandidateType?.Equals("Fresher", StringComparison.OrdinalIgnoreCase) == true;
+
+                bool hasFresherGap = isFresher && res.CareerBreak;
+
+                <div style="border: 1px solid #ddd; margin-top: 10px; padding: 15px; background: #fff;">
+
+                    <!-- Filename + Status header -->
+                    <div style="font-weight: bold; font-size: 16px; margin-bottom: 10px;">
+                        @res.File
+                        @if (isErr)
+                        {
+                            <text> → ERROR</text>
+                        }
+                        else if (isInvalid)
+                        {
+                            @* Just show INVALID DOCUMENT — no score *@
+                            <text> → ⚠️ INVALID DOCUMENT</text>
+                        }
+                        else if (res.IsScoreSuppressed)
+                        {
+                            <text> → NOT MATCHED (DOMAIN MISMATCH)</text>
+                        }
+                        else
+                        {
+                            <text> → @res.NumericScore.ToString("F1")% → @res.Status</text>
+                        }
+                    </div>
+
+                    @* ── INVALID DOCUMENT: show only a clean message, no table ── *@
+                    @if (isInvalid)
+                    {
+                        <div style="color: #c0392b; background: #fdf3f2;
+                            border: 1px solid #e8c4c0; border-radius: 4px;
+                            padding: 12px 16px; font-size: 14px;">
+                            ⚠️&nbsp; <strong>This file could not be processed as a resume.</strong><br />
+                            @if (!string.IsNullOrWhiteSpace(res.TierDescription))
+                            {
+                                <span style="color: #555;">@res.TierDescription</span>
+                            }
+                            else
+                            {
+                                <span style="color: #555;">
+                                    The document appears to be empty, too short, or does not contain
+                                    recognisable resume content. Please upload a valid resume file.
+                                </span>
+                            }
+                        </div>
+                    }
+
+                    @* ── ERROR ── *@
+                    else if (isErr)
+                    {
+                        <div style="color: red;"><strong>Error:</strong> @res.Error</div>
+                    }
+
+                    @* ── VALID RESUME: show full summary table ── *@
+                    else
+                    {
+                        <!-- Flags -->
+                        @if (res.NearMiss || res.WrongProfile || res.DomainMismatch || hasFresherGap)
+                        {
+                            <div style="margin-bottom: 10px;">
+                                @if (res.WrongProfile)
+                                {
+                                    <span style="background: #fee; padding: 2px 8px; margin-right: 5px;">⚠️ Wrong Profile</span>
+                                }
+                                @if (res.DomainMismatch && !res.WrongProfile)
+                                {
+                                    <span style="background: #ffe; padding: 2px 8px; margin-right: 5px;">⚠️ Domain Mismatch</span>
+                                }
+                                @if (res.NearMiss)
+                                {
+                                    <span style="background: #ffc; padding: 2px 8px; margin-right: 5px;">⚠️ Near Miss</span>
+                                }
+                                @if (hasFresherGap)
+                                {
+                                    <span style="background: #eef; padding: 2px 8px;">📅 Post-Graduation Gap</span>
+                                }
+                            </div>
+                        }
+
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="width: 150px; padding: 5px 0;"><strong>Candidate:</strong></td>
+                                <td style="padding: 5px 0;">@res.Name</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 5px 0;"><strong>Type:</strong></td>
+                                <td style="padding: 5px 0;">@(isFresher ? "Fresher" : "Experienced")</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 5px 0;"><strong>Experience:</strong></td>
+                                <td style="padding: 5px 0;">@res.Experience</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 5px 0;"><strong>Match Score:</strong></td>
+                                <td style="padding: 5px 0;">
+                                    @if (res.IsScoreSuppressed)
+                                    {
+                                        <text>N/A (suppressed — domain mismatch; raw overlap: @res.RawScore.ToString("F1")%)</text>
+                                    }
+                                    else
+                                    {
+                                        <strong>@res.NumericScore.ToString("F1")%</strong>
+                                    }
+                                </td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 5px 0;"><strong>Match Tier:</strong></td>
+                                <td style="padding: 5px 0;">
+                                    @{
+                                        string tierLabel = "Not Matched";
+                                        if (res.Tier.Contains("Good")) tierLabel = "Good Match";
+                                        else if (res.Tier.Contains("Medium")) tierLabel = "Medium Match";
+                                        else if (res.Tier.Contains("Low")) tierLabel = "Low Match";
+                                        else if (res.Tier.Contains("Mismatch")) tierLabel = "Domain Mismatch";
+                                    }
+                                    @tierLabel
+                                    @if (!string.IsNullOrWhiteSpace(res.TierDescription))
+                                    {
+                                        <text> - @res.TierDescription</text>
+                                    }
+                                </td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 5px 0;"><strong>JD Domain:</strong></td>
+                                <td style="padding: 5px 0;">
+                                    @res.JdDomain
+                                    @if (res.DomainMismatch)
+                                    {
+                                        <text> (Does not match resume domain)</text>
+                                    }
+                                </td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 5px 0;"><strong>Domain Switch:</strong></td>
+                                <td style="padding: 5px 0;">
+                                    @if (isFresher)
+                                    {
+                                        <text>Not applicable (Fresher)</text>
+                                    }
+                                    else if (res.DomainSwitch)
+                                    {
+                                        <text>Yes (@res.DomainSwitchFrom → @res.Domain)</text>
+                                    }
+                                    else
+                                    {
+                                        <text>No</text>
+                                    }
+                                </td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 5px 0;"><strong>Career Break:</strong></td>
+                                <td style="padding: 5px 0;">
+                                    @if (res.CareerBreak)
+                                    {
+                                        @res.CareerBreakDetail
+                                    }
+                                    else if (isFresher)
+                                    {
+                                        <text>No gap detected (Fresher)</text>
+                                    }
+                                    else
+                                    {
+                                        <text>No career break detected</text>
+                                    }
+                                </td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 5px 0;"><strong>Work Locations:</strong></td>
+                                <td style="padding: 5px 0;">
+                                    @if (isFresher)
+                                    {
+                                        <text>Not applicable (Fresher)</text>
+                                    }
+                                    else if (string.IsNullOrWhiteSpace(res.Locations) || res.Locations == "Not mentioned")
+                                    {
+                                        <text>Not mentioned</text>
+                                    }
+                                    else
+                                    {
+                                        @res.Locations
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 5px 0;"><strong>Companies:</strong></td>
+                                <td style="padding: 5px 0;">
+                                    @if (isFresher)
+                                    {
+                                        <text>Not applicable (Fresher)</text>
+                                    }
+                                    else if (res.CompanyCount == 0)
+                                    {
+                                        <text>Not detected</text>
+                                    }
+                                    else
+                                    {
+                                        @res.CompanyCount @(res.CompanyCount == 1 ? "company" : "companies")
+                                        @if (res.CompanyCountEstimated)
+                                        {
+                                            <text> (estimated)</text>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                        </table>
+                    }
+
+                </div>
+            }
+
+        </div>
+    }
+
+    <script>
+            document.getElementById('resumeFiles').addEventListener('change', function () {
+                const names = Array.from(this.files).map(f => f.name).join(', ');
+                document.getElementById('fileNames').textContent = names ? 'Selected: ' + names : '';
+            });
+
+            document.getElementById('matchForm').addEventListener('submit', function () {
+                document.getElementById('submitBtn').disabled = true;
+                document.getElementById('submitBtn').textContent = 'Analysing...';
+                document.getElementById('loadingMsg').style.display = 'block';
+            });
+    </script>
+
+</body>
+</html>
