@@ -10,6 +10,7 @@ namespace Resume_NCDL.Controllers
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _config;
         private readonly ILogger<ResumeMatcherController> _logger;
+        private readonly IWebHostEnvironment _env;  // ← NEW: to get wwwroot path
 
         private static readonly JsonSerializerOptions _jsonOptions = new()
         {
@@ -22,11 +23,13 @@ namespace Resume_NCDL.Controllers
         public ResumeMatcherController(
             IHttpClientFactory httpClientFactory,
             IConfiguration config,
-            ILogger<ResumeMatcherController> logger)
+            ILogger<ResumeMatcherController> logger,
+            IWebHostEnvironment env)   // ← NEW
         {
             _httpClientFactory = httpClientFactory;
             _config = config;
             _logger = logger;
+            _env = env;
         }
 
         [HttpGet]
@@ -46,9 +49,16 @@ namespace Resume_NCDL.Controllers
             if (input.Resumes == null || input.Resumes.Count == 0)
                 return ErrorView(input, "Please upload at least one resume.");
 
+            // ── Ensure uploads directory exists under wwwroot ──────────────────
+            var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
+            Directory.CreateDirectory(uploadsFolder);
+
             using var form = new MultipartFormDataContent();
             form.Add(new StringContent(input.JdText), "jd_text");
             form.Add(new StringContent(input.Threshold.ToString()), "threshold");
+
+            // Track saved file info: original filename → (saved filename, public URL)
+            var savedFiles = new Dictionary<string, (string SavedName, string PublicUrl)>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var file in input.Resumes)
             {
@@ -61,14 +71,33 @@ namespace Resume_NCDL.Controllers
                     continue;
                 }
 
-                var sc = new StreamContent(file.OpenReadStream());
+                // ── Save to wwwroot/uploads with a unique name to avoid collisions ──
+                var safeOriginal = Path.GetFileNameWithoutExtension(file.FileName)
+                    .Replace(" ", "_")
+                    .Replace("..", "_");
+                var uniqueName = $"{safeOriginal}_{Guid.NewGuid():N}{ext}";
+                var savePath = Path.Combine(uploadsFolder, uniqueName);
+
+                await using (var fs = new FileStream(savePath, FileMode.Create))
+                    await file.CopyToAsync(fs);
+
+                // Public URL: /uploads/uniqueName
+                var publicUrl = Url.Content($"~/uploads/{uniqueName}");
+                savedFiles[file.FileName] = (uniqueName, publicUrl!);
+
+                _logger.LogInformation("Saved resume: {File} → {Path}", file.FileName, savePath);
+
+                // ── Also forward to Python API for analysis ──────────────────────
+                var sc = new StreamContent(System.IO.File.OpenRead(savePath));
                 sc.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(
                     ext == ".pdf" ? "application/pdf" :
                     ext == ".docx" ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                                    : "text/plain");
-
-                form.Add(sc, "files", file.FileName);
+                form.Add(sc, "files", file.FileName);  // keep original filename for Python
             }
+
+            if (savedFiles.Count == 0)
+                return ErrorView(input, "No valid files were found to upload (PDF/DOCX/TXT only).");
 
             var baseUrl = _config["FlaskApi:BaseUrl"]?.TrimEnd('/');
             if (string.IsNullOrWhiteSpace(baseUrl))
@@ -100,6 +129,20 @@ namespace Resume_NCDL.Controllers
 
                 foreach (var r in apiResult.Results)
                 {
+                    // ── Attach the local saved filename & public URL to each result ──
+                    if (savedFiles.TryGetValue(r.File, out var fi))
+                    {
+                        r.SavedFileName = fi.SavedName;
+                        r.PublicUrl = fi.PublicUrl;
+                    }
+                    else
+                    {
+                        // Fallback: try to match by original name without extension
+                        r.SavedFileName = r.File;
+                        r.PublicUrl = Url.Content($"~/uploads/{r.File}") ?? "#";
+                    }
+
+                    // ── Normalise all other fields ────────────────────────────────
                     r.Name = NullOrEmpty(r.Name) ? "Name Not Found" : r.Name;
                     r.CandidateType = NullOrEmpty(r.CandidateType) ? "Unknown" : r.CandidateType;
                     r.Domain = NullOrEmpty(r.Domain) ? "Unknown" : r.Domain;
@@ -110,13 +153,15 @@ namespace Resume_NCDL.Controllers
                     r.DomainSwitchLabel = NullOrEmpty(r.DomainSwitchLabel) ? (r.DomainSwitch ? "Yes" : "No") : r.DomainSwitchLabel;
                     r.DomainSwitchFrom = r.DomainSwitchFrom ?? "";
                     r.CareerBreakDetail = NullOrEmpty(r.CareerBreakDetail) ? "No career break detected" : r.CareerBreakDetail;
+                    r.EmploymentGapDetail = NullOrEmpty(r.EmploymentGapDetail) ? "No employment gap detected" : r.EmploymentGapDetail;
                     r.Locations = NullOrEmpty(r.Locations) ? "Not mentioned" : r.Locations;
                     r.SkillGapDetail = r.SkillGapDetail ?? "";
                     r.Summary = r.Summary ?? "";
                     r.MatchedSkills ??= new List<string>();
                     r.MissingSkills ??= new List<string>();
+                    r.LowMatchReasons ??= new List<string>();
+                    r.AffindaSkills ??= new List<string>();
 
-                    // Status: domain mismatch overrides everything; otherwise use numeric score
                     if (NullOrEmpty(r.Status))
                     {
                         r.Status = (r.DomainMismatch || r.WrongProfile)
@@ -136,7 +181,7 @@ namespace Resume_NCDL.Controllers
             {
                 _logger.LogError(ex, "Network error calling Python API.");
                 return ErrorView(input,
-                    $"Could not reach the Python API. Make sure the HuggingFace Space is running. Detail: {ex.Message}");
+                    $"Could not reach the Python API. Make sure the server is running. Detail: {ex.Message}");
             }
             catch (TaskCanceledException ex)
             {
@@ -154,6 +199,42 @@ namespace Resume_NCDL.Controllers
                 _logger.LogError(ex, "Unexpected error in Analyze.");
                 return ErrorView(input, $"Unexpected error: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Download a resume that was saved locally in wwwroot/uploads.
+        /// The savedFileName is the unique name we generated at upload time.
+        /// </summary>
+        [HttpGet]
+        public IActionResult DownloadResume(string savedFileName, string originalName)
+        {
+            if (string.IsNullOrWhiteSpace(savedFileName))
+                return BadRequest("Filename is required.");
+
+            // Strip any path traversal attempts
+            var safeName = Path.GetFileName(savedFileName);
+            var uploadsPath = Path.Combine(_env.WebRootPath, "uploads", safeName);
+
+            if (!System.IO.File.Exists(uploadsPath))
+            {
+                _logger.LogWarning("Download requested for missing file: {File}", safeName);
+                return NotFound($"File '{safeName}' not found. Please re-run analysis.");
+            }
+
+            var ext = Path.GetExtension(safeName).ToLowerInvariant();
+            var contentType = ext switch
+            {
+                ".pdf" => "application/pdf",
+                ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                ".txt" => "text/plain",
+                _ => "application/octet-stream"
+            };
+
+            // Use the original filename for the download dialog
+            var downloadName = string.IsNullOrWhiteSpace(originalName)
+                ? safeName : Path.GetFileName(originalName);
+
+            return PhysicalFile(uploadsPath, contentType, downloadName);
         }
 
         [HttpGet]

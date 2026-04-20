@@ -4,6 +4,47 @@ using System.Text.Json.Serialization;
 
 namespace Resume_NCDL.Models
 {
+    // ── Not-matched feedback from Python API ──────────────────────────
+    public class NotMatchedFeedback
+    {
+        [JsonPropertyName("why_not_matched")]
+        public List<string> WhyNotMatched { get; set; } = new();
+
+        [JsonPropertyName("resume_best_fit_domain")]
+        public string ResumeBestFitDomain { get; set; } = "";
+
+        [JsonPropertyName("resume_best_fit_level")]
+        public string ResumeBestFitLevel { get; set; } = "";
+
+        [JsonPropertyName("recommendation")]
+        public string Recommendation { get; set; } = "";
+    }
+
+    // ── Near-miss detail — close but below threshold ──────────────────
+    public class NearMissDetail
+    {
+        [JsonPropertyName("is_near_miss")]
+        public bool IsNearMiss { get; set; }
+
+        [JsonPropertyName("score")]
+        public double Score { get; set; }
+
+        [JsonPropertyName("threshold")]
+        public double Threshold { get; set; }
+
+        [JsonPropertyName("gap")]
+        public double Gap { get; set; }
+
+        [JsonPropertyName("reasons")]
+        public List<string> Reasons { get; set; } = new();
+
+        [JsonPropertyName("suggestions")]
+        public List<string> Suggestions { get; set; } = new();
+
+        [JsonPropertyName("recommendation")]
+        public string Recommendation { get; set; } = "";
+    }
+
     public class ResumeResult
     {
         [JsonPropertyName("file")]
@@ -31,6 +72,16 @@ namespace Resume_NCDL.Models
                 ? DisplayScore.GetDouble()
                 : RawScore;
 
+        // ── NEW: set by the controller after saving to wwwroot/uploads ────────
+        /// <summary>The unique filename as saved in wwwroot/uploads (e.g. resume_abc123.pdf).</summary>
+        [JsonIgnore]
+        public string SavedFileName { get; set; } = "";
+
+        /// <summary>Public URL to view/download the file (e.g. /uploads/resume_abc123.pdf).</summary>
+        [JsonIgnore]
+        public string PublicUrl { get; set; } = "";
+        // ──────────────────────────────────────────────────────────────────────
+
         [JsonPropertyName("status")]
         public string Status { get; set; } = "";
 
@@ -43,14 +94,26 @@ namespace Resume_NCDL.Models
         [JsonPropertyName("name")]
         public string Name { get; set; } = "";
 
+        [JsonPropertyName("name_source")]
+        public string NameSource { get; set; } = "";
+
         [JsonPropertyName("candidate_type")]
         public string CandidateType { get; set; } = "";
+
+        [JsonPropertyName("candidate_type_source")]
+        public string CandidateTypeSource { get; set; } = "";
 
         [JsonPropertyName("experience")]
         public string Experience { get; set; } = "";
 
+        [JsonPropertyName("experience_source")]
+        public string ExperienceSource { get; set; } = "";
+
         [JsonPropertyName("domain")]
         public string Domain { get; set; } = "";
+
+        [JsonPropertyName("domain_source")]
+        public string DomainSource { get; set; } = "";
 
         [JsonPropertyName("jd_domain")]
         public string JdDomain { get; set; } = "";
@@ -64,20 +127,37 @@ namespace Resume_NCDL.Models
         [JsonPropertyName("domain_switch_from")]
         public string DomainSwitchFrom { get; set; } = "";
 
+        // Career break (between jobs — experienced candidates only)
         [JsonPropertyName("career_break")]
         public bool CareerBreak { get; set; }
 
         [JsonPropertyName("career_break_detail")]
         public string CareerBreakDetail { get; set; } = "";
 
+        [JsonPropertyName("career_break_source")]
+        public string CareerBreakSource { get; set; } = "";
+
+        // Employment gap (for freshers — time since graduation with no work)
+        [JsonPropertyName("employment_gap")]
+        public bool EmploymentGap { get; set; }
+
+        [JsonPropertyName("employment_gap_detail")]
+        public string EmploymentGapDetail { get; set; } = "";
+
         [JsonPropertyName("locations")]
         public string Locations { get; set; } = "";
+
+        [JsonPropertyName("locations_source")]
+        public string LocationsSource { get; set; } = "";
 
         [JsonPropertyName("company_count")]
         public int CompanyCount { get; set; }
 
         [JsonPropertyName("company_count_estimated")]
         public bool CompanyCountEstimated { get; set; }
+
+        [JsonPropertyName("company_count_source")]
+        public string CompanyCountSource { get; set; } = "";
 
         [JsonPropertyName("matched_skills")]
         public List<string> MatchedSkills { get; set; } = new();
@@ -88,6 +168,9 @@ namespace Resume_NCDL.Models
         [JsonPropertyName("skill_gap_detail")]
         public string SkillGapDetail { get; set; } = "";
 
+        [JsonPropertyName("affinda_skills")]
+        public List<string> AffindaSkills { get; set; } = new();
+
         [JsonPropertyName("near_miss")]
         public bool NearMiss { get; set; }
 
@@ -97,8 +180,22 @@ namespace Resume_NCDL.Models
         [JsonPropertyName("wrong_profile")]
         public bool WrongProfile { get; set; }
 
+        [JsonPropertyName("affinda_available")]
+        public bool AffindaAvailable { get; set; }
+
         [JsonPropertyName("summary")]
         public string Summary { get; set; } = "";
+
+        [JsonPropertyName("low_match_reasons")]
+        public List<string> LowMatchReasons { get; set; } = new();
+
+        // Not-matched feedback with why + best-fit domain/level
+        [JsonPropertyName("not_matched_feedback")]
+        public NotMatchedFeedback? NotMatchedFeedback { get; set; }
+
+        // Near-miss detail — close but below threshold
+        [JsonPropertyName("near_miss_detail")]
+        public NearMissDetail? NearMissDetail { get; set; }
 
         [JsonPropertyName("error")]
         public string? Error { get; set; }
@@ -148,10 +245,4 @@ namespace Resume_NCDL.Models
         public BatchApiResponse? ApiResult { get; set; }
         public string? ErrorMsg { get; set; }
     }
-
-    //public class ErrorViewModel
-    //{
-    //    public string? RequestId { get; set; }
-    //    public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
-    //}
 }
