@@ -63,6 +63,7 @@
 
         .hint { font-size: 11px; color: #6a737d; margin-top: 4px; line-height: 1.5; }
 
+        /* ── FILE ZONE ── */
         .file-zone {
             border: 1.5px dashed #c8d1da; border-radius: 4px;
             padding: 16px 12px; text-align: center; cursor: pointer;
@@ -75,8 +76,129 @@
         .file-zone-text { font-size: 12px; color: #6a737d; }
         .file-zone-text strong { color: #0366d6; }
         .file-chips { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
-        .file-chip { font-size: 10.5px; background: #dbeafe; color: #1d4ed8; border-radius: 3px; padding: 2px 7px; }
+        .file-chip {
+            font-size: 10.5px; border-radius: 3px; padding: 2px 7px;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .file-chip-browse { background: #dbeafe; color: #1d4ed8; }
+        .file-chip-db     { background: #dcffe4; color: #166534; border: 1px solid #a2ddb8; }
+        .file-chip-remove {
+            background: none; border: none; cursor: pointer;
+            color: inherit; opacity: .6; font-size: 11px;
+            padding: 0; line-height: 1;
+        }
+        .file-chip-remove:hover { opacity: 1; }
 
+        /* ── OR DIVIDER ── */
+        .upload-or {
+            display: flex; align-items: center; gap: 8px;
+            margin: 8px 0; font-size: 11px; color: #9ca3af;
+        }
+        .upload-or::before, .upload-or::after {
+            content: ''; flex: 1; height: 1px; background: #e1e4e8;
+        }
+
+        /* ── DB DROPDOWN TRIGGER ── */
+        .db-dropdown-wrap { position: relative; }
+
+        .db-trigger {
+            width: 100%; display: flex; align-items: center; justify-content: space-between;
+            gap: 8px; padding: 7px 12px;
+            background: #f6f8fa; border: 1px solid #d1d5da; border-radius: 4px;
+            font-size: 12px; font-family: inherit; color: #24292e;
+            cursor: pointer; transition: border-color .15s, background .15s;
+        }
+        .db-trigger:hover { border-color: #0366d6; background: #f0f7ff; }
+        .db-trigger.open  { border-color: #0366d6; background: #f0f7ff; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+        .db-trigger-left  { display: flex; align-items: center; gap: 6px; }
+        .db-trigger-badge {
+            background: #0366d6; color: #fff; border-radius: 10px;
+            font-size: 9px; font-weight: 700; padding: 1px 6px; min-width: 16px; text-align: center;
+        }
+        .db-trigger-badge.hidden { display: none; }
+        .db-trigger-arrow { font-size: 10px; color: #6a737d; transition: transform .15s; }
+        .db-trigger.open .db-trigger-arrow { transform: rotate(180deg); }
+
+        /* ── DB DROPDOWN PANEL ── */
+        .db-dropdown {
+            display: none; position: absolute; left: 0; right: 0; top: 100%;
+            background: #fff; border: 1px solid #0366d6; border-top: none;
+            border-bottom-left-radius: 4px; border-bottom-right-radius: 4px;
+            z-index: 50; box-shadow: 0 8px 24px rgba(0,0,0,.12);
+            max-height: 280px; flex-direction: column;
+        }
+        .db-dropdown.open { display: flex; }
+
+        .db-dd-search {
+            padding: 8px 10px; border-bottom: 1px solid #e1e4e8; flex-shrink: 0;
+            position: relative;
+        }
+        .db-dd-search input {
+            width: 100%; border: 1px solid #d1d5da; border-radius: 3px;
+            padding: 5px 8px 5px 26px; font-size: 12px; font-family: inherit;
+            color: #24292e; background: #f6f8fa;
+        }
+        .db-dd-search input:focus { outline: none; border-color: #0366d6; background: #fff; }
+        .db-dd-search-icon {
+            position: absolute; left: 18px; top: 50%; transform: translateY(-50%);
+            font-size: 11px; color: #9ca3af; pointer-events: none;
+        }
+
+        .db-dd-actions {
+            padding: 5px 10px; border-bottom: 1px solid #e1e4e8;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-shrink: 0; gap: 8px;
+        }
+        .db-dd-count { font-size: 10px; color: #6a737d; }
+        .db-dd-selall {
+            font-size: 10px; color: #0366d6; cursor: pointer;
+            background: none; border: none; font-family: inherit; font-weight: 600; padding: 0;
+        }
+        .db-dd-selall:hover { text-decoration: underline; }
+
+        .db-dd-list {
+            overflow-y: auto; flex: 1;
+        }
+        .db-dd-list::-webkit-scrollbar { width: 4px; }
+        .db-dd-list::-webkit-scrollbar-thumb { background: #d1d5da; border-radius: 2px; }
+
+        .db-dd-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 7px 10px; cursor: pointer; border-bottom: 1px solid #f3f3f3;
+            transition: background .1s;
+        }
+        .db-dd-item:last-child { border-bottom: none; }
+        .db-dd-item:hover { background: #f6f8fa; }
+        .db-dd-item.selected { background: #f0f7ff; }
+        .db-dd-item input[type="checkbox"] { flex-shrink: 0; accent-color: #0366d6; width: 13px; height: 13px; cursor: pointer; }
+        .db-dd-item-icon { font-size: 14px; flex-shrink: 0; }
+        .db-dd-item-info { flex: 1; min-width: 0; }
+        .db-dd-item-name {
+            font-size: 12px; font-weight: 500; color: #24292e;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .db-dd-item.selected .db-dd-item-name { color: #0366d6; }
+        .db-dd-item-meta { font-size: 10px; color: #9ca3af; margin-top: 1px; }
+
+        .db-dd-empty { padding: 20px 10px; text-align: center; color: #9ca3af; font-size: 12px; }
+        .db-dd-loading { padding: 16px 10px; text-align: center; color: #9ca3af; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .db-dd-spinner { width: 14px; height: 14px; border: 2px solid #e1e4e8; border-top-color: #0366d6; border-radius: 50%; animation: spin .7s linear infinite; }
+
+        .db-dd-footer {
+            padding: 7px 10px; border-top: 1px solid #e1e4e8;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-shrink: 0; background: #f6f8fa;
+        }
+        .db-dd-footer-info { font-size: 10px; color: #6a737d; }
+        .db-dd-add {
+            background: #0366d6; color: #fff; border: none; border-radius: 3px;
+            padding: 4px 12px; font-size: 11px; font-weight: 600;
+            font-family: inherit; cursor: pointer;
+        }
+        .db-dd-add:hover { background: #0256ba; }
+        .db-dd-add:disabled { opacity: .5; cursor: not-allowed; }
+
+        /* ── BUTTONS ── */
         .btn-primary {
             background: #0366d6; color: #fff; border: none; border-radius: 4px;
             padding: 9px 20px; font-size: 13px; font-weight: 600; font-family: inherit;
@@ -92,7 +214,6 @@
         }
         .btn-ghost:hover { background: #f6f8fa; }
 
-        /* Icon buttons */
         .ib {
             display: inline-flex; align-items: center; justify-content: center;
             width: 28px; height: 28px; border: 1px solid #d1d5da;
@@ -110,6 +231,7 @@
             padding: 10px 14px; color: #cb2431; font-size: 13px; margin-bottom: 14px;
         }
 
+        /* ── SUMMARY STRIP ── */
         .summary-strip { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
         .s-tile {
             background: #fff; border: 1px solid #d1d5da; border-radius: 6px;
@@ -117,26 +239,70 @@
         }
         .sv { font-size: 26px; font-weight: 700; }
         .sl { font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: #6a737d; font-weight: 600; margin-top: 2px; }
-        .t-total .sv { color: #24292e; }
-        .t-match .sv { color: #22863a; }
-        .t-no    .sv { color: #cb2431; }
-        .t-near  .sv { color: #b08800; }
-        .t-mis   .sv { color: #6f42c1; }
+        .t-total .sv { color: #24292e; } .t-match .sv { color: #22863a; }
+        .t-no .sv { color: #cb2431; } .t-near .sv { color: #b08800; } .t-mis .sv { color: #6f42c1; }
 
+        /* ══════════════════════════════════════════
+           FILTER BAR — updated with Type + Exp Year
+        ══════════════════════════════════════════ */
         .filter-bar {
             background: #fff; border: 1px solid #d1d5da; border-radius: 6px;
-            padding: 10px 14px; display: flex; gap: 12px; flex-wrap: wrap;
+            padding: 10px 14px; display: flex; gap: 10px; flex-wrap: wrap;
             align-items: flex-end; margin-bottom: 12px;
         }
         .fg { display: flex; flex-direction: column; gap: 3px; }
-        .fg label { font-size: 10px; font-weight: 600; color: #6a737d; text-transform: uppercase; letter-spacing: .4px; }
-        .fg select, .fg input[type="text"], .fg input[type="number"] {
+        .fg label {
+            font-size: 10px; font-weight: 600; color: #6a737d;
+            text-transform: uppercase; letter-spacing: .4px;
+        }
+        .fg select, .fg input[type="text"] {
             border: 1px solid #d1d5da; border-radius: 4px; padding: 5px 8px;
             font-size: 12.5px; font-family: inherit; color: #24292e;
             background: #fff; min-width: 100px;
         }
         .fg select:focus, .fg input:focus { outline: none; border-color: #0366d6; }
 
+        /* Experience year filter — locked until Type=Experienced */
+        .fg-exp-year { position: relative; }
+        .fg-exp-year input[type="number"] {
+            border: 1px solid #d1d5da; border-radius: 4px; padding: 5px 8px;
+            font-size: 12.5px; font-family: inherit; color: #24292e;
+            background: #fff; width: 90px;
+        }
+        .fg-exp-year input[type="number"]:focus { outline: none; border-color: #0366d6; }
+        .fg-exp-year input[type="number"]:disabled {
+            background: #f6f8fa; color: #9ca3af; cursor: not-allowed;
+            border-color: #e1e4e8;
+        }
+        /* Lock overlay tooltip */
+        .exp-lock-tip {
+            display: none; position: absolute; bottom: calc(100% + 6px); left: 50%;
+            transform: translateX(-50%); white-space: nowrap;
+            background: #24292e; color: #fff; font-size: 10px; border-radius: 4px;
+            padding: 4px 8px; pointer-events: none; z-index: 20;
+        }
+        .exp-lock-tip::after {
+            content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+            border: 4px solid transparent; border-top-color: #24292e;
+        }
+        .fg-exp-year:hover .exp-lock-tip.visible { display: block; }
+
+        /* Min-score filter */
+        .fg-minscore input[type="number"] {
+            border: 1px solid #d1d5da; border-radius: 4px; padding: 5px 8px;
+            font-size: 12.5px; font-family: inherit; color: #24292e;
+            background: #fff; width: 72px;
+        }
+        .fg-minscore input[type="number"]:focus { outline: none; border-color: #0366d6; }
+
+        /* Active filter indicator */
+        .filter-active-dot {
+            display: inline-block; width: 6px; height: 6px;
+            background: #0366d6; border-radius: 50; margin-left: 4px;
+            vertical-align: middle;
+        }
+
+        /* ── TABLE ── */
         .table-wrap { background: #fff; border: 1px solid #d1d5da; border-radius: 6px; overflow: hidden; }
         table.rt { width: 100%; border-collapse: collapse; font-size: 13px; }
         table.rt thead th {
@@ -154,28 +320,20 @@
         .td-name { font-weight: 600; color: #24292e; }
         .td-score { font-weight: 700; font-size: 13px; font-family: monospace; }
 
-        .pill {
-            display: inline-block; font-size: 11px; font-weight: 600;
-            padding: 2px 8px; border-radius: 12px;
-            text-transform: uppercase; letter-spacing: .3px; white-space: nowrap;
-        }
+        /* Filtered-out rows */
+        .row-filtered-out { display: none !important; }
+
+        .pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 12px; text-transform: uppercase; letter-spacing: .3px; white-space: nowrap; }
         .p-match { background: #dcffe4; color: #22863a; border: 1px solid #a2ddb8; }
         .p-no    { background: #ffeef0; color: #cb2431; border: 1px solid #ffc5cb; }
         .p-near  { background: #fff8c5; color: #735c0f; border: 1px solid #e6d06b; }
         .p-mis   { background: #f3e0ff; color: #6f42c1; border: 1px solid #d6acf0; }
         .p-inv   { background: #f6f8fa; color: #6a737d;  border: 1px solid #d1d5da; }
 
-        .sc-good { color: #22863a; }
-        .sc-med  { color: #0366d6; }
-        .sc-low  { color: #b08800; }
-        .sc-bad  { color: #cb2431; }
-        .sc-na   { color: #6f42c1; }
+        .sc-good { color: #22863a; } .sc-med { color: #0366d6; } .sc-low { color: #b08800; }
+        .sc-bad  { color: #cb2431; } .sc-na  { color: #6f42c1; }
 
-        .ftag {
-            font-size: 10px; font-weight: 600; padding: 1px 6px;
-            border-radius: 3px; margin-left: 4px; white-space: nowrap;
-            display: inline-block; vertical-align: middle;
-        }
+        .ftag { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 3px; margin-left: 4px; white-space: nowrap; display: inline-block; vertical-align: middle; }
         .ftag-mis   { background: #f3e0ff; color: #6f42c1; }
         .ftag-break { background: #fff8c5; color: #735c0f; }
         .ftag-gap   { background: #dbeafe; color: #1d4ed8; }
@@ -184,42 +342,18 @@
         tr.detail-row td { padding: 0; }
         .detail-panel { background: #f6f8fa; border-top: 1px solid #e1e4e8; }
 
-        .det-hd {
-            background: #24292e; color: #fff;
-            padding: 10px 16px; display: flex; align-items: center;
-            gap: 12px; font-size: 13px; flex-wrap: wrap;
-        }
-        .det-hd-name  { font-weight: 700; }
-        .det-hd-score { font-family: monospace; font-size: 15px; font-weight: 700; }
+        .det-hd { background: #24292e; color: #fff; padding: 10px 16px; display: flex; align-items: center; gap: 12px; font-size: 13px; flex-wrap: wrap; }
+        .det-hd-name { font-weight: 700; } .det-hd-score { font-family: monospace; font-size: 15px; font-weight: 700; }
         .det-hd-thresh { font-size: 11px; color: rgba(255,255,255,.5); }
 
-        /* ── URL bar inside detail header ─────────────────────────── */
-        .url-bar {
-            display: flex; align-items: center; gap: 6px;
-            background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
-            border-radius: 4px; padding: 5px 10px;
-            font-family: monospace; font-size: 11px; color: rgba(255,255,255,.8);
-            max-width: 480px; overflow: hidden; margin-left: auto;
-            flex-shrink: 0;
-        }
+        .url-bar { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); border-radius: 4px; padding: 5px 10px; font-family: monospace; font-size: 11px; color: rgba(255,255,255,.8); max-width: 480px; overflow: hidden; margin-left: auto; flex-shrink: 0; }
         .url-bar-icon { opacity: .6; flex-shrink: 0; }
         .url-bar-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .url-bar-btn {
-            background: none; border: none; cursor: pointer;
-            color: rgba(255,255,255,.7); font-size: 12px;
-            padding: 1px 5px; border-radius: 3px;
-            flex-shrink: 0; transition: color .15s;
-        }
+        .url-bar-btn { background: none; border: none; cursor: pointer; color: rgba(255,255,255,.7); font-size: 12px; padding: 1px 5px; border-radius: 3px; flex-shrink: 0; transition: color .15s; }
         .url-bar-btn:hover { color: #fff; background: rgba(255,255,255,.15); }
 
-        /* ── URL display row inside kv table ──────────────────────── */
-        .url-kv-row {
-            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-        }
-        .url-kv-link {
-            font-family: monospace; font-size: 12px; color: #0366d6;
-            text-decoration: none; word-break: break-all;
-        }
+        .url-kv-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .url-kv-link { font-family: monospace; font-size: 12px; color: #0366d6; text-decoration: none; word-break: break-all; }
         .url-kv-link:hover { text-decoration: underline; }
         .url-kv-actions { display: flex; gap: 4px; flex-shrink: 0; }
 
@@ -243,12 +377,7 @@
 
         input[type="checkbox"] { accent-color: #0366d6; width: 13px; height: 13px; cursor: pointer; }
 
-        #cmpBar {
-            display: none; position: fixed; bottom: 0; left: 0; right: 0;
-            background: #24292e; padding: 12px 24px; z-index: 100;
-            align-items: center; gap: 12px;
-            box-shadow: 0 -4px 16px rgba(0,0,0,.2);
-        }
+        #cmpBar { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #24292e; padding: 12px 24px; z-index: 100; align-items: center; gap: 12px; box-shadow: 0 -4px 16px rgba(0,0,0,.2); }
         #cmpBar.show { display: flex; }
         #cmpBar .ci { flex: 1; font-size: 13px; color: #fff; font-weight: 500; }
         #cmpBar .ci small { color: rgba(255,255,255,.5); font-size: 11px; display: block; }
@@ -272,6 +401,9 @@
         .spinner { width: 34px; height: 34px; border: 3px solid #e1e4e8; border-top-color: #0366d6; border-radius: 50%; animation: spin .7s linear infinite; }
         @@keyframes spin { to { transform: rotate(360deg); } }
         .loading-ov p { font-size: 14px; font-weight: 500; color: #444d56; }
+
+        .fresher-badge { display: inline-flex; align-items: center; gap: 5px; background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; border-radius: 12px; font-size: 10px; font-weight: 700; padding: 2px 9px; text-transform: uppercase; letter-spacing: .4px; vertical-align: middle; margin-left: 8px; }
+        .v-na { color: #9ca3af; font-style: italic; font-size: 12px; }
 
         footer { text-align: center; padding: 22px; font-size: 11px; color: #6a737d; border-top: 1px solid #e1e4e8; margin-top: 8px; }
 
@@ -308,6 +440,10 @@
         <div class="card-body">
             <form asp-action="Analyze" asp-controller="ResumeMatcher"
                   method="post" enctype="multipart/form-data" id="matchForm">
+
+              @* Hidden: pipe-separated DB file paths *@
+                <input type="hidden" name="DbFilePaths" id="dbFilePathsInput" value="" />
+
                 <div class="form-row">
                     <div>
                         <label class="form-label">Job Description <span class="req">*</span></label>
@@ -320,28 +456,74 @@
                             <label class="form-label">Match Threshold (%)</label>
                             <input type="number" name="Threshold" min="1" max="100" value="@Model.Threshold" />
                             <div class="hint">
-                                Resumes scoring above this % are marked Matched. Default: 40<br/>
+                                Resumes scoring above this % are marked Matched. Default: 40<br />
                                 Score bands: Good ≥60% | Medium 50–59% | Low 40–49% | Not Matched &lt;40%
                             </div>
                         </div>
+
                         <div>
                             <label class="form-label">Upload Resumes (PDF / DOCX / TXT) <span class="req">*</span></label>
+
+                             @* File drop zone  *@
                             <div class="file-zone" id="fileDrop">
                                 <input type="file" name="Resumes" id="resumeFiles"
-                                       accept=".pdf,.docx,.txt" multiple required />
+                                       accept=".pdf,.docx,.txt" multiple />
                                 <div class="file-zone-icon">📂</div>
                                 <div class="file-zone-text">
-                                    <strong>Click to browse</strong> or drag &amp; drop<br/>
+                                    <strong>Click to browse</strong> or drag &amp; drop<br />
                                     <span style="font-size:11px;">PDF · DOCX · TXT · Multiple files</span>
                                 </div>
-                                <div id="fileNames" class="file-chips"></div>
+                                <div id="fileChips" class="file-chips"></div>
                             </div>
+
+                            @* OR divider  *@
+                            <div class="upload-or">or</div>
+
+                        @* Database dropdown  *@
+                            <div class="db-dropdown-wrap" id="dbDropdownWrap">
+                                <button type="button" class="db-trigger" id="dbTrigger" onclick="toggleDbDropdown()">
+                                    <span class="db-trigger-left">
+                                        <span>🗄️</span>
+                                        <span>Choose from Database</span>
+                                        <span class="db-trigger-badge hidden" id="dbBadge">0</span>
+                                    </span>
+                                    <span class="db-trigger-arrow">▼</span>
+                                </button>
+
+                                <div class="db-dropdown" id="dbDropdown">
+                                    <div class="db-dd-search">
+                                        <span class="db-dd-search-icon">🔍</span>
+                                        <input type="text" id="dbDdSearch" placeholder="Search by filename…" oninput="filterDdList()" />
+                                    </div>
+                                    <div class="db-dd-actions">
+                                        <span class="db-dd-count" id="dbDdCount">Loading…</span>
+                                        <button type="button" class="db-dd-selall" onclick="ddSelectAll()">Select All</button>
+                                    </div>
+                                    <div class="db-dd-list" id="dbDdList">
+                                        <div class="db-dd-loading">
+                                            <div class="db-dd-spinner"></div>
+                                            <span>Loading resumes from database…</span>
+                                        </div>
+                                    </div>
+                                    <div class="db-dd-footer">
+                                        <span class="db-dd-footer-info" id="dbDdFooterInfo">0 selected</span>
+                                        <button type="button" class="db-dd-add" id="dbDdAddBtn" onclick="confirmDbSelection()" disabled>
+                                            ✓ Add to Queue
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
-                <button type="submit" id="submitBtn" class="btn-primary">
-                    🔍 Analyse Resumes
-                </button>
+
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <button type="submit" id="submitBtn" class="btn-primary">
+                        🔍 Analyse Resumes
+                    </button>
+                    <span id="queueInfo" style="font-size:11px;color:#6a737d;"></span>
+                </div>
             </form>
         </div>
     </div>
@@ -361,32 +543,58 @@
             @if (api.DomainMismatches > 0) { <div class="s-tile t-mis"><div class="sv">@api.DomainMismatches</div><div class="sl">Domain Mismatch</div></div> }
         </div>
 
-        <div class="filter-bar">
-            <div class="fg">
-                <label>Type</label>
-                <select id="fType">
-                    <option value="">All</option>
-                    <option>Fresher</option>
-                    <option>Experienced</option>
-                </select>
-            </div>
+        <!-- FILTER BAR — Type → Exp Year chain + Status + Score + Location -->
+        <div class="filter-bar" id="filterBar">
+
+            @* {{!-- 1. Status --}} *@
             <div class="fg">
                 <label>Status</label>
-                <select id="fStatus">
+                <select id="fStatus" onchange="applyFilters()">
                     <option value="">All</option>
                     <option value="MATCHED">Matched</option>
                     <option value="NOT MATCHED">Not Matched</option>
                     <option value="DOMAIN MISMATCH">Domain Mismatch</option>
                 </select>
             </div>
+
+            @* {{!-- 2. Candidate Type (must pick before Exp Year is available) --}} *@
             <div class="fg">
-                <label>Min Score (%)</label>
-                <input type="number" id="fMinScore" min="0" max="100" placeholder="0" style="width:72px;" />
+                <label>Candidate Type</label>
+                <select id="fType" onchange="onTypeChange()">
+                    <option value="">All</option>
+                    <option value="Fresher">Fresher</option>
+                    <option value="Experienced">Experienced</option>
+                </select>
             </div>
+
+            @* {{!-- 3. Experience Year — locked until Type = Experienced --}} *@
+            <div class="fg fg-exp-year" id="fExpWrap">
+                <label id="fExpLabel" style="color:#9ca3af;">Experience (yrs)</label>
+                <input type="number" id="fExpYear"
+                       min="0" max="50" step="0.5"
+                       placeholder="e.g. 2"
+                       disabled
+                       oninput="validateExpInput(this); applyFilters();"
+                       onkeydown="blockNonNumeric(event)" />
+                <span class="exp-lock-tip visible" id="expLockTip">
+                    Select &ldquo;Experienced&rdquo; type first
+                </span>
+            </div>
+
+            @* {{!-- 4. Min Score --}} *@
+            <div class="fg fg-minscore">
+                <label>Min Score (%)</label>
+                <input type="number" id="fMinScore" min="0" max="100" placeholder="0"
+                       oninput="applyFilters()" onkeydown="blockNonNumeric(event)" />
+            </div>
+
+            @* {{!-- 5. Location --}} *@
             <div class="fg">
                 <label>Location</label>
-                <input type="text" id="fLocation" placeholder="e.g. Chennai" style="width:120px;" />
+                <input type="text" id="fLocation" placeholder="e.g. Chennai" style="width:120px;"
+                       oninput="applyFilters()" />
             </div>
+
             <button class="btn-ghost" onclick="resetFilters()">↺ Reset</button>
         </div>
 
@@ -412,81 +620,70 @@
                     var res = item.r;
                     var idx = item.i;
 
-                    bool isErr     = res.Error != null;
+                    bool isErr = res.Error != null;
                     bool isInvalid = !isErr && (
                         string.Equals(res.Status, "INVALID DOCUMENT", StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(res.Tier, "⚠️ Invalid Document", StringComparison.OrdinalIgnoreCase) ||
                         (res.Name == "N/A" && res.Experience == "N/A" && res.CandidateType == "N/A")
                     );
-                    bool isFresher   = !isInvalid && !isErr &&
+                    bool isFresher = !isInvalid && !isErr &&
                         res.CandidateType?.Equals("Fresher", StringComparison.OrdinalIgnoreCase) == true;
                     bool isDomainMis = res.DomainMismatch || res.WrongProfile;
-
-                    bool isActuallyMatched = !isDomainMis && !isInvalid && !isErr
-                        && res.NumericScore >= api.Threshold;
+                    bool isActuallyMatched = !isDomainMis && !isInvalid && !isErr && res.NumericScore >= api.Threshold;
 
                     string scoreClass = isInvalid || res.IsScoreSuppressed ? "sc-na"
                         : res.NumericScore >= 60 ? "sc-good"
                         : res.NumericScore >= 50 ? "sc-med"
-                        : res.NumericScore >= 40 ? "sc-low"
-                        : "sc-bad";
+                        : res.NumericScore >= 40 ? "sc-low" : "sc-bad";
 
-                    string pillCls = isInvalid ? "p-inv"
-                        : isDomainMis ? "p-mis"
-                        : res.NearMiss ? "p-near"
-                        : isActuallyMatched ? "p-match"
-                        : "p-no";
-
-                    string pillTxt = isInvalid ? "Invalid"
-                        : isErr ? "Error"
-                        : isDomainMis ? "Domain Mismatch"
-                        : res.NearMiss ? "Near Miss"
-                        : isActuallyMatched ? "Matched"
-                        : "Not Matched";
+                    string pillCls = isInvalid ? "p-inv" : isDomainMis ? "p-mis"
+                        : res.NearMiss ? "p-near" : isActuallyMatched ? "p-match" : "p-no";
+                    string pillTxt = isInvalid ? "Invalid" : isErr ? "Error"
+                        : isDomainMis ? "Domain Mismatch" : res.NearMiss ? "Near Miss"
+                        : isActuallyMatched ? "Matched" : "Not Matched";
 
                     string dataType   = isFresher ? "Fresher" : "Experienced";
-                    string dataStatus = isInvalid ? "INVALID"
-                        : isDomainMis ? "DOMAIN MISMATCH"
+                    string dataStatus = isInvalid ? "INVALID" : isDomainMis ? "DOMAIN MISMATCH"
                         : isActuallyMatched ? "MATCHED" : "NOT MATCHED";
                     double dataScore  = isInvalid ? 0 : res.NumericScore;
                     string dataLoc    = res.Locations ?? "";
 
-                    // ── URLs: direct static path for view & download ──────────────
-                    // PublicUrl is already set as ~/uploads/uniqueName by controller
-                    // We use it for: open in new tab (view), download, copy URL
-                    string viewUrl    = res.PublicUrl;   // e.g. /uploads/resume_abc.pdf
-                    string dlUrl      = Url.Action("DownloadResume", "ResumeMatcher", new {
-                                            savedFileName = res.SavedFileName,
-                                            originalName  = res.File
-                                        }) ?? "#";
+                    // ── Parse numeric experience for filtering ──
+                    // Stored as data-exp-years attribute — extract first number from string
+                    double expYears = 0;
+                    if (!isFresher && !string.IsNullOrWhiteSpace(res.Experience))
+                    {
+                        var m = System.Text.RegularExpressions.Regex.Match(res.Experience, @"(\d+(?:\.\d+)?)");
+                        if (m.Success) double.TryParse(m.Value, out expYears);
+                    }
+
+                    string viewUrl    = res.PublicUrl;
+                    string dlUrl      = Url.Action("DownloadResume", "ResumeMatcher", new { savedFileName = res.SavedFileName, originalName = res.File }) ?? "#";
                     string fullViewUrl = $"{Context.Request.Scheme}://{Context.Request.Host}{viewUrl}";
 
                     var co = new {
-                        name        = res.Name,
-                        score       = isInvalid ? "N/A" : (res.IsScoreSuppressed ? "N/A" : res.NumericScore.ToString("F1") + "%"),
-                        status      = dataStatus,
-                        type        = dataType,
-                        exp         = res.Experience,
-                        domain      = res.Domain,
-                        tier        = res.Tier,
-                        locs        = res.Locations,
-                        companies   = res.CompanyCount,
+                        name = res.Name,
+                        score = isInvalid ? "N/A" : (res.IsScoreSuppressed ? "N/A" : res.NumericScore.ToString("F1") + "%"),
+                        status = dataStatus, type = dataType, exp = res.Experience,
+                        domain = res.Domain, tier = res.Tier, locs = res.Locations,
+                        companies = res.CompanyCount,
                         careerBreak = res.CareerBreak ? res.CareerBreakDetail : "None",
-                        empGap      = res.EmploymentGap ? res.EmploymentGapDetail : "None",
-                        matched     = string.Join(", ", res.MatchedSkills ?? new List<string>()),
-                        missing     = string.Join(", ", res.MissingSkills ?? new List<string>()),
-                        file        = res.File,
-                        viewUrl     = fullViewUrl
+                        empGap = res.EmploymentGap ? res.EmploymentGapDetail : "None",
+                        matched = string.Join(", ", res.MatchedSkills ?? new List<string>()),
+                        missing = string.Join(", ", res.MissingSkills ?? new List<string>()),
+                        file = res.File, viewUrl = fullViewUrl
                     };
                     string coJson = System.Text.Json.JsonSerializer.Serialize(co);
 
                     <tr class="main-row" id="row-@idx"
-                        data-type="@dataType" data-status="@dataStatus"
-                        data-score="@dataScore" data-loc="@dataLoc">
+                        data-type="@dataType"
+                        data-status="@dataStatus"
+                        data-score="@dataScore.ToString("F1")"
+                        data-loc="@dataLoc"
+                        data-exp-years="@expYears.ToString("F1")">
 
                         <td style="padding-left:12px;">
-                            <input type="checkbox" class="cmp-cb"
-                                   data-idx="@idx"
+                            <input type="checkbox" class="cmp-cb" data-idx="@idx"
                                    data-json="@System.Net.WebUtility.HtmlEncode(coJson)"
                                    onchange="toggleCmp(this)" />
                         </td>
@@ -516,13 +713,9 @@
                         </td>
                         <td>
                             <div style="display:flex;gap:3px;align-items:center;">
-                                
                                 <a class="ib dl" href="@dlUrl" title="Download resume" download>⬇</a>
-                                
                                 <a class="ib lk" href="@viewUrl" title="Open in new tab" target="_blank" rel="noopener">↗</a>
-                                
                                 <button class="ib cp" title="Copy URL" onclick="copyUrl('@fullViewUrl',this)">⎘</button>
-                                
                                 <button class="ib" title="View details" onclick="toggleDetail('det-@idx',this)">▼</button>
                             </div>
                         </td>
@@ -532,216 +725,136 @@
                     <tr class="detail-row" id="det-@idx" style="display:none;">
                         <td colspan="10">
                             <div class="detail-panel">
-                            @if (isInvalid)
-                            {
-                                <div class="det-hd">
-                                    <span class="det-hd-name">@res.File</span>
-                                    <span class="pill p-inv">Invalid Document</span>
-                                </div>
-                                <div style="padding:12px 16px;font-size:13px;color:#6a737d;">
-                                    ⚠ Could not parse as resume.
-                                    @if (!string.IsNullOrWhiteSpace(res.TierDescription)) { <text> — @res.TierDescription</text> }
-                                </div>
-                            }
-                            else if (isErr)
-                            {
-                                <div class="det-hd">
-                                    <span class="det-hd-name">@res.File</span>
-                                    <span class="pill p-no">Error</span>
-                                </div>
-                                <div style="padding:12px 16px;font-size:13px;color:#cb2431;">✕ @res.Error</div>
-                            }
-                            else
-                            {
-                                string detPillCls = isDomainMis ? "p-mis" : isActuallyMatched ? "p-match" : "p-no";
-                                string detPillTxt = isDomainMis ? "Domain Mismatch" : isActuallyMatched ? "Matched" : "Not Matched";
-
-                                <div class="det-hd">
-                                    <span class="det-hd-name">RESUME MATCHING REPORT</span>
-                                    <span style="color:rgba(255,255,255,.35)">|</span>
-                                    <span class="det-hd-thresh">Threshold: @api.Threshold%</span>
-                                    <span class="det-hd-score @scoreClass">
-                                        @(res.IsScoreSuppressed ? "N/A" : res.NumericScore.ToString("F1") + "%")
-                                    </span>
-                                    <span class="pill @detPillCls">@detPillTxt</span>
-                                    
-                                    <div class="url-bar">
-                                        <span class="url-bar-icon">🔗</span>
-                                        <span class="url-bar-text" title="@fullViewUrl">@fullViewUrl</span>
-                                        <button class="url-bar-btn" onclick="copyUrl('@fullViewUrl',this)" title="Copy URL">⎘</button>
-                                        <a class="url-bar-btn" href="@viewUrl" target="_blank" rel="noopener" title="Open" style="text-decoration:none;">↗</a>
+                                @if (isInvalid)
+                                {
+                                    <div class="det-hd">
+                                        <span class="det-hd-name">@res.File</span>
+                                        <span class="pill p-inv">Invalid Document</span>
                                     </div>
-                                </div>
-
-                                <table class="kv">
-                                    
-                                    <tr class="kv-sec"><td colspan="2">Resume File</td></tr>
-                                    <tr>
-                                        <td class="k">Original Filename</td>
-                                        <td class="v" style="font-family:monospace;font-size:12px;">@res.File</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="k">Stored As</td>
-                                        <td class="v" style="font-family:monospace;font-size:12px;color:#6a737d;">@res.SavedFileName</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="k">Resume URL</td>
-                                        <td class="v">
-                                            <div class="url-kv-row">
-                                                <a class="url-kv-link" href="@viewUrl" target="_blank" rel="noopener">@fullViewUrl</a>
-                                                <div class="url-kv-actions">
-                                                    <button class="ib cp" onclick="copyUrl('@fullViewUrl',this)" title="Copy URL">⎘</button>
-                                                    <a class="ib lk" href="@viewUrl" target="_blank" rel="noopener" title="Open in new tab">↗</a>
-                                                    <a class="ib dl" href="@dlUrl" title="Download" download>⬇</a>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    
-                                    <tr class="kv-sec"><td colspan="2">Candidate Info</td></tr>
-                                    <tr><td class="k">Candidate</td><td class="v">@res.Name</td></tr>
-                                    <tr><td class="k">Type</td><td class="v">@(isFresher ? "Fresher" : "Experienced")</td></tr>
-                                    <tr><td class="k">Experience</td><td class="v">@(string.IsNullOrWhiteSpace(res.Experience) || res.Experience == "Not determinable" ? "Not determinable" : res.Experience)</td></tr>
-                                    <tr>
-                                        <td class="k">Match Score</td>
-                                        <td class="v @scoreClass" style="font-weight:700;font-family:monospace;font-size:14px;">
-                                            @(res.IsScoreSuppressed ? "N/A (domain mismatch)" : res.NumericScore.ToString("F1") + "%")
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="k">Status vs Threshold</td>
-                                        <td class="v">
-                                            <span class="pill @detPillCls">@detPillTxt</span>
-                                            <span style="font-size:11px;color:#6a737d;margin-left:6px;">
-                                                @res.NumericScore.ToString("F1")% vs threshold @api.Threshold%
-                                                — @(isActuallyMatched ? "above threshold ✓" : isDomainMis ? "domain mismatch" : "below threshold ✗")
-                                            </span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="k">Match Tier</td>
-                                        <td class="v">
-                                            @{
-                                                string tierDesc2 = res.Tier.Contains("Good") ? "Good Match - Strong alignment (≥60%) — recommended for interview."
-                                                    : res.Tier.Contains("Medium") ? "Medium Match - Partial alignment (50–59%)."
-                                                    : res.Tier.Contains("Low") ? "Low Match - Weak alignment (40–49%) — review manually."
-                                                    : res.Tier.Contains("Mismatch") ? "Domain Mismatch — not recommended."
-                                                    : "Not Matched — below threshold.";
-                                            }
-                                            @tierDesc2
-                                        </td>
-                                    </tr>
-                                    <tr><td class="k">JD Domain</td><td class="v">@res.JdDomain</td></tr>
-                                    <tr>
-                                        <td class="k">Resume Domain</td>
-                                        <td class="v">
-                                            @res.Domain
-                                            @if (isDomainMis) { <span style="color:#cb2431;font-size:11px;font-weight:600;"> (mismatch)</span> }
-                                        </td>
-                                    </tr>
-
-                                    @if (!isFresher)
-                                    {
-                                        <tr>
-                                            <td class="k">Domain Switch</td>
-                                            <td class="v">
-                                                @if (res.DomainSwitch) { <span style="color:#b08800;">Yes — @res.DomainSwitchFrom → @res.Domain</span> }
-                                                else { <text>No</text> }
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="k">Career Break</td>
-                                            <td class="v">
-                                                @if (res.CareerBreak)
-                                                { <span style="color:#b08800;font-weight:600;">⚠ @res.CareerBreakDetail</span> }
-                                                else { <span style="color:#22863a;">No career break detected</span> }
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="k">Work Locations</td>
-                                            <td class="v">@(string.IsNullOrWhiteSpace(res.Locations) || res.Locations == "Not mentioned" ? "Not mentioned" : res.Locations)</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="k">Companies</td>
-                                            <td class="v">
-                                                @if (res.CompanyCount == 0) { <text>Not detected</text> }
-                                                else { @res.CompanyCount <text> @(res.CompanyCount == 1 ? "company" : "companies")@(res.CompanyCountEstimated ? " (estimated)" : "")</text> }
-                                            </td>
-                                        </tr>
-                                    }
-
-                                    @if (isFresher)
-                                    {
-                                        <tr>
-                                            <td class="k">Employment Gap</td>
-                                            <td class="v">
-                                                @if (res.EmploymentGap)
-                                                { <span style="color:#0366d6;font-weight:600;">⚠ @res.EmploymentGapDetail</span> }
-                                                else { <span style="color:#22863a;">No employment gap detected</span> }
-                                            </td>
-                                        </tr>
-                                        <tr><td class="k">Work Locations</td><td class="v">Not applicable (Fresher)</td></tr>
-                                        <tr><td class="k">Companies</td><td class="v">Not applicable (Fresher)</td></tr>
-                                    }
-
-                                    @if ((res.MatchedSkills?.Count > 0 || res.MissingSkills?.Count > 0) && !isDomainMis)
-                                    {
-                                        <tr class="kv-sec"><td colspan="2">Skill Analysis</td></tr>
-                                        @if (res.MatchedSkills?.Count > 0)
+                                    <div style="padding:12px 16px;font-size:13px;color:#6a737d;">
+                                        ⚠ Could not parse as resume.
+                                        @if (!string.IsNullOrWhiteSpace(res.TierDescription)) { <text> — @res.TierDescription</text> }
+                                    </div>
+                                }
+                                else if (isErr)
+                                {
+                                    <div class="det-hd">
+                                        <span class="det-hd-name">@res.File</span>
+                                        <span class="pill p-no">Error</span>
+                                    </div>
+                                    <div style="padding:12px 16px;font-size:13px;color:#cb2431;">✕ @res.Error</div>
+                                }
+                                else if (isFresher)
+                                {
+                                    string detPillClsF = isDomainMis ? "p-mis" : isActuallyMatched ? "p-match" : "p-no";
+                                    string detPillTxtF = isDomainMis ? "Domain Mismatch" : isActuallyMatched ? "Matched" : "Not Matched";
+                                    <div class="det-hd">
+                                        <span class="det-hd-name">RESUME MATCHING REPORT</span>
+                                        <span class="fresher-badge">🎓 Fresher</span>
+                                        <span style="color:rgba(255,255,255,.35)">|</span>
+                                        <span class="det-hd-thresh">Threshold: @api.Threshold%</span>
+                                        <span class="det-hd-score @scoreClass">@(res.IsScoreSuppressed ? "N/A" : res.NumericScore.ToString("F1") + "%")</span>
+                                        <span class="pill @detPillClsF">@detPillTxtF</span>
+                                        <div class="url-bar">
+                                            <span class="url-bar-icon">🔗</span>
+                                            <span class="url-bar-text" title="@fullViewUrl">@fullViewUrl</span>
+                                            <button class="url-bar-btn" onclick="copyUrl('@fullViewUrl',this)" title="Copy URL">⎘</button>
+                                            <a class="url-bar-btn" href="@viewUrl" target="_blank" rel="noopener" title="Open" style="text-decoration:none;">↗</a>
+                                        </div>
+                                    </div>
+                                    <table class="kv">
+                                        <tr class="kv-sec"><td colspan="2">Resume File</td></tr>
+                                        <tr><td class="k">Original Filename</td><td class="v" style="font-family:monospace;font-size:12px;">@res.File</td></tr>
+                                        <tr><td class="k">Stored As</td><td class="v" style="font-family:monospace;font-size:12px;color:#6a737d;">@res.SavedFileName</td></tr>
+                                        <tr><td class="k">Resume URL</td><td class="v"><div class="url-kv-row"><a class="url-kv-link" href="@viewUrl" target="_blank" rel="noopener">@fullViewUrl</a><div class="url-kv-actions"><button class="ib cp" onclick="copyUrl('@fullViewUrl',this)" title="Copy URL">⎘</button><a class="ib lk" href="@viewUrl" target="_blank" rel="noopener" title="Open">↗</a><a class="ib dl" href="@dlUrl" title="Download" download>⬇</a></div></div></td></tr>
+                                        <tr class="kv-sec"><td colspan="2">Candidate Info</td></tr>
+                                        <tr><td class="k">Name</td><td class="v">@(string.IsNullOrWhiteSpace(res.Name)||res.Name=="Name Not Found"?"<span class='v-na'>Not mentioned</span>":res.Name)</td></tr>
+                                        <tr><td class="k">Type</td><td class="v"><span class="pill" style="background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;">Fresher</span></td></tr>
+                                        <tr><td class="k">Education</td><td class="v">@(!string.IsNullOrWhiteSpace(res.Education)&&res.Education!="Not mentioned"?res.Education:"<span class='v-na'>Not mentioned</span>")</td></tr>
+                                        <tr><td class="k">Match Score</td><td class="v @scoreClass" style="font-weight:700;font-family:monospace;font-size:14px;">@(res.IsScoreSuppressed?"N/A (domain mismatch)":res.NumericScore.ToString("F1")+"%")</td></tr>
+                                        <tr><td class="k">Status</td><td class="v"><span class="pill @detPillClsF">@detPillTxtF</span><span style="font-size:11px;color:#6a737d;margin-left:6px;">@res.NumericScore.ToString("F1")% vs @api.Threshold% — @(isActuallyMatched?"above threshold ✓":isDomainMis?"domain mismatch":"below threshold ✗")</span></td></tr>
+                                        <tr><td class="k">Match Tier</td><td class="v">@(res.Tier.Contains("Good")?"Good Match — Strong alignment (≥60%), recommended for interview.":res.Tier.Contains("Medium")?"Medium Match — Partial alignment (50–59%).":res.Tier.Contains("Low")?"Low Match — Weak alignment (40–49%), review manually.":res.Tier.Contains("Mismatch")?"Domain Mismatch — not recommended.":"Not Matched — below threshold.")</td></tr>
+                                        <tr class="kv-sec"><td colspan="2">Practical Experience</td></tr>
+                                        <tr><td class="k">Internship</td><td class="v">@(!string.IsNullOrWhiteSpace(res.Internship)&&res.Internship!="Not mentioned"?res.Internship:"<span class='v-na'>Not mentioned</span>")</td></tr>
+                                        <tr><td class="k">Projects</td><td class="v">@(!string.IsNullOrWhiteSpace(res.Projects)&&res.Projects!="Not mentioned"?res.Projects:"<span class='v-na'>Not mentioned</span>")</td></tr>
+                                        @if ((res.MatchedSkills?.Count > 0 || res.MissingSkills?.Count > 0) && !isDomainMis)
                                         {
-                                            <tr>
-                                                <td class="k">Matched Skills</td>
-                                                <td class="v">
-                                                    <div class="sk-list">
-                                                        @foreach (var sk in res.MatchedSkills.Take(14)) { <span class="sk sk-y">@sk</span> }
-                                                    </div>
-                                                </td>
-                                            </tr>
+                                            <tr class="kv-sec"><td colspan="2">Skills Analysis</td></tr>
+                                            <tr><td class="k">Matched Skills</td><td class="v">@if(res.MatchedSkills?.Count>0){<div class="sk-list">@foreach(var sk in res.MatchedSkills.Take(14)){<span class="sk sk-y">@sk</span>}</div>}else{<span class="v-na">None matched</span>}</td></tr>
+                                            <tr><td class="k">Missing Skills</td><td class="v">@if(res.MissingSkills?.Count>0){<div class="sk-list">@foreach(var sk in res.MissingSkills.Take(14)){<span class="sk sk-n">@sk</span>}</div>}else{<span class="v-na">None missing</span>}</td></tr>
                                         }
-                                        @if (res.MissingSkills?.Count > 0)
+                                        else if (!isDomainMis)
                                         {
-                                            <tr>
-                                                <td class="k">Missing Skills</td>
-                                                <td class="v">
-                                                    <div class="sk-list">
-                                                        @foreach (var sk in res.MissingSkills.Take(14)) { <span class="sk sk-n">@sk</span> }
-                                                    </div>
-                                                </td>
-                                            </tr>
+                                            <tr class="kv-sec"><td colspan="2">Skills Analysis</td></tr>
+                                            <tr><td class="k">Matched Skills</td><td class="v"><span class="v-na">None matched</span></td></tr>
+                                            <tr><td class="k">Missing Skills</td><td class="v"><span class="v-na">None detected</span></td></tr>
                                         }
-                                    }
-
-                                    @if (res.NotMatchedFeedback != null && res.NotMatchedFeedback.WhyNotMatched.Count > 0)
-                                    {
-                                        <tr class="kv-sec"><td colspan="2">Why Not Matched</td></tr>
-                                        <tr>
-                                            <td class="k">Reasons</td>
-                                            <td class="v">
-                                                <ul class="reasons">
-                                                    @foreach (var reason in res.NotMatchedFeedback.WhyNotMatched) { <li>@reason</li> }
-                                                </ul>
-                                            </td>
-                                        </tr>
-                                        @if (!string.IsNullOrWhiteSpace(res.NotMatchedFeedback.ResumeBestFitDomain))
+                                        <tr class="kv-sec"><td colspan="2">Additional Info</td></tr>
+                                        <tr><td class="k">Staying Location</td><td class="v">@(string.IsNullOrWhiteSpace(res.StayingLocation)||res.StayingLocation=="Not mentioned"?"<span class='v-na'>Not mentioned</span>":res.StayingLocation)</td></tr>
+                                        <tr><td class="k">Employment Gap</td><td class="v">@if(res.EmploymentGap){<span style="color:#0366d6;font-weight:600;">⚠ @res.EmploymentGapDetail</span>}else{<span style="color:#22863a;">No employment gap detected</span>}</td></tr>
+                                        <tr class="kv-sec"><td colspan="2">Domain Analysis</td></tr>
+                                        <tr><td class="k">JD Domain</td><td class="v">@(string.IsNullOrWhiteSpace(res.JdDomain)||res.JdDomain=="Unknown"?"<span class='v-na'>Not determined</span>":res.JdDomain)</td></tr>
+                                        <tr><td class="k">Resume Domain</td><td class="v">@(string.IsNullOrWhiteSpace(res.Domain)||res.Domain=="Unknown"?"<span class='v-na'>Not determined</span>":res.Domain)@if(isDomainMis){<span style="color:#cb2431;font-size:11px;font-weight:600;"> (mismatch)</span>}</td></tr>
+                                        @if (res.NotMatchedFeedback?.WhyNotMatched.Count > 0)
                                         {
-                                            <tr>
-                                                <td class="k">Best Fit For Resume</td>
-                                                <td class="v" style="color:#6f42c1;">
-                                                    @res.NotMatchedFeedback.ResumeBestFitDomain — @res.NotMatchedFeedback.ResumeBestFitLevel
-                                                </td>
-                                            </tr>
+                                            <tr class="kv-sec"><td colspan="2">Why Not Matched</td></tr>
+                                            <tr><td class="k">Reasons</td><td class="v"><ul class="reasons">@foreach(var r in res.NotMatchedFeedback.WhyNotMatched){<li>@r</li>}</ul></td></tr>
+                                            @if (!string.IsNullOrWhiteSpace(res.NotMatchedFeedback.ResumeBestFitDomain)) { <tr><td class="k">Best Fit</td><td class="v" style="color:#6f42c1;">@res.NotMatchedFeedback.ResumeBestFitDomain — @res.NotMatchedFeedback.ResumeBestFitLevel</td></tr> }
                                         }
-                                    }
-
-                                    @if (isDomainMis)
-                                    {
-                                        <tr class="kv-sec"><td colspan="2">Domain Mismatch</td></tr>
-                                        <tr><td class="k">JD Requires</td><td class="v" style="color:#cb2431;font-weight:600;">@res.JdDomain</td></tr>
-                                        <tr><td class="k">Candidate Domain</td><td class="v" style="color:#cb2431;">@res.Domain — profile not suitable for this role.</td></tr>
-                                    }
-                                </table>
-                            }
+                                        @if (isDomainMis) { <tr class="kv-sec"><td colspan="2">Domain Mismatch</td></tr><tr><td class="k">JD Requires</td><td class="v" style="color:#cb2431;font-weight:600;">@res.JdDomain</td></tr><tr><td class="k">Candidate Domain</td><td class="v" style="color:#cb2431;">@res.Domain — profile not suitable for this role.</td></tr> }
+                                    </table>
+                                }
+                                else
+                                {
+                                    string detPillCls = isDomainMis ? "p-mis" : isActuallyMatched ? "p-match" : "p-no";
+                                    string detPillTxt = isDomainMis ? "Domain Mismatch" : isActuallyMatched ? "Matched" : "Not Matched";
+                                    <div class="det-hd">
+                                        <span class="det-hd-name">RESUME MATCHING REPORT</span>
+                                        <span style="color:rgba(255,255,255,.35)">|</span>
+                                        <span class="det-hd-thresh">Threshold: @api.Threshold%</span>
+                                        <span class="det-hd-score @scoreClass">@(res.IsScoreSuppressed?"N/A":res.NumericScore.ToString("F1")+"%")</span>
+                                        <span class="pill @detPillCls">@detPillTxt</span>
+                                        <div class="url-bar">
+                                            <span class="url-bar-icon">🔗</span>
+                                            <span class="url-bar-text" title="@fullViewUrl">@fullViewUrl</span>
+                                            <button class="url-bar-btn" onclick="copyUrl('@fullViewUrl',this)" title="Copy URL">⎘</button>
+                                            <a class="url-bar-btn" href="@viewUrl" target="_blank" rel="noopener" title="Open" style="text-decoration:none;">↗</a>
+                                        </div>
+                                    </div>
+                                    <table class="kv">
+                                        <tr class="kv-sec"><td colspan="2">Resume File</td></tr>
+                                        <tr><td class="k">Original Filename</td><td class="v" style="font-family:monospace;font-size:12px;">@res.File</td></tr>
+                                        <tr><td class="k">Stored As</td><td class="v" style="font-family:monospace;font-size:12px;color:#6a737d;">@res.SavedFileName</td></tr>
+                                        <tr><td class="k">Resume URL</td><td class="v"><div class="url-kv-row"><a class="url-kv-link" href="@viewUrl" target="_blank" rel="noopener">@fullViewUrl</a><div class="url-kv-actions"><button class="ib cp" onclick="copyUrl('@fullViewUrl',this)" title="Copy URL">⎘</button><a class="ib lk" href="@viewUrl" target="_blank" rel="noopener" title="Open">↗</a><a class="ib dl" href="@dlUrl" title="Download" download>⬇</a></div></div></td></tr>
+                                        <tr class="kv-sec"><td colspan="2">Candidate Info</td></tr>
+                                        <tr><td class="k">Candidate</td><td class="v">@res.Name</td></tr>
+                                        <tr><td class="k">Type</td><td class="v">Experienced</td></tr>
+                                        <tr><td class="k">Experience</td><td class="v">@(string.IsNullOrWhiteSpace(res.Experience)||res.Experience=="Not determinable"?"Not determinable":res.Experience)</td></tr>
+                                        <tr><td class="k">Match Score</td><td class="v @scoreClass" style="font-weight:700;font-family:monospace;font-size:14px;">@(res.IsScoreSuppressed?"N/A (domain mismatch)":res.NumericScore.ToString("F1")+"%")</td></tr>
+                                        <tr><td class="k">Status vs Threshold</td><td class="v"><span class="pill @detPillCls">@detPillTxt</span><span style="font-size:11px;color:#6a737d;margin-left:6px;">@res.NumericScore.ToString("F1")% vs @api.Threshold% — @(isActuallyMatched?"above threshold ✓":isDomainMis?"domain mismatch":"below threshold ✗")</span></td></tr>
+                                        <tr><td class="k">Match Tier</td><td class="v">@(res.Tier.Contains("Good")?"Good Match - Strong alignment (≥60%)":res.Tier.Contains("Medium")?"Medium Match - Partial alignment (50–59%).":res.Tier.Contains("Low")?"Low Match - Weak alignment (40–49%).":res.Tier.Contains("Mismatch")?"Domain Mismatch.":"Not Matched.")</td></tr>
+                                        <tr><td class="k">JD Domain</td><td class="v">@res.JdDomain</td></tr>
+                                        <tr><td class="k">Resume Domain</td><td class="v">@res.Domain@if(isDomainMis){<span style="color:#cb2431;font-size:11px;font-weight:600;"> (mismatch)</span>}</td></tr>
+                                        <tr><td class="k">Domain Switch</td><td class="v">@if(res.DomainSwitch){<span style="color:#b08800;">Yes — @res.DomainSwitchFrom → @res.Domain</span>}else{<text>No</text>}</td></tr>
+                                        <tr><td class="k">Career Break</td><td class="v">@if(res.CareerBreak){<span style="color:#b08800;font-weight:600;">⚠ @res.CareerBreakDetail</span>}else{<span style="color:#22863a;">No career break detected</span>}</td></tr>
+                                        <tr><td class="k">Employment Gap</td><td class="v">@if(res.EmploymentGap){<span style="color:#0366d6;font-weight:600;">⚠ @res.EmploymentGapDetail</span>}else{<span style="color:#22863a;">No employment gap detected</span>}</td></tr>
+                                        <tr><td class="k">Work Locations</td><td class="v">@(string.IsNullOrWhiteSpace(res.Locations)||res.Locations=="Not mentioned"?"Not mentioned":res.Locations)</td></tr>
+                                        <tr><td class="k">Companies</td><td class="v">@if(res.CompanyCount==0){<text>Not detected</text>}else{@res.CompanyCount<text> @(res.CompanyCount==1?"company":"companies")@(res.CompanyCountEstimated?" (estimated)":"")</text>}</td></tr>
+                                        @if ((res.MatchedSkills?.Count > 0 || res.MissingSkills?.Count > 0) && !isDomainMis)
+                                        {
+                                            <tr class="kv-sec"><td colspan="2">Skill Analysis</td></tr>
+                                            @if (res.MatchedSkills?.Count > 0) { <tr><td class="k">Matched Skills</td><td class="v"><div class="sk-list">@foreach(var sk in res.MatchedSkills.Take(14)){<span class="sk sk-y">@sk</span>}</div></td></tr> }
+                                            @if (res.MissingSkills?.Count > 0) { <tr><td class="k">Missing Skills</td><td class="v"><div class="sk-list">@foreach(var sk in res.MissingSkills.Take(14)){<span class="sk sk-n">@sk</span>}</div></td></tr> }
+                                        }
+                                        @if (res.NotMatchedFeedback?.WhyNotMatched.Count > 0)
+                                        {
+                                            <tr class="kv-sec"><td colspan="2">Why Not Matched</td></tr>
+                                            <tr><td class="k">Reasons</td><td class="v"><ul class="reasons">@foreach(var r in res.NotMatchedFeedback.WhyNotMatched){<li>@r</li>}</ul></td></tr>
+                                            @if (!string.IsNullOrWhiteSpace(res.NotMatchedFeedback.ResumeBestFitDomain)) { <tr><td class="k">Best Fit</td><td class="v" style="color:#6f42c1;">@res.NotMatchedFeedback.ResumeBestFitDomain — @res.NotMatchedFeedback.ResumeBestFitLevel</td></tr> }
+                                        }
+                                        @if (isDomainMis) { <tr class="kv-sec"><td colspan="2">Domain Mismatch</td></tr><tr><td class="k">JD Requires</td><td class="v" style="color:#cb2431;font-weight:600;">@res.JdDomain</td></tr><tr><td class="k">Candidate Domain</td><td class="v" style="color:#cb2431;">@res.Domain — not suitable.</td></tr> }
+                                    </table>
+                                }
                             </div>
                         </td>
                     </tr>
@@ -773,110 +886,414 @@
 </div>
 
 <script>
-    document.getElementById('resumeFiles')?.addEventListener('change', function () {
-        const box = document.getElementById('fileNames');
-        box.innerHTML = Array.from(this.files).map(f => `<span class="file-chip">${f.name}</span>`).join('');
+// ═══════════════════════════════════════════════════════
+//  DB DROPDOWN
+// ═══════════════════════════════════════════════════════
+
+let dbResumes = [];           // full list from server
+let dbDdSelected = new Set(); // Set<dbId (string)> currently ticked in dropdown
+let dbQueued = [];            // [{dbId, fileName}] confirmed into queue
+
+async function loadDbResumes() {
+    try {
+        // ── Replace with your real endpoint ──────────────────────────────
+        // GET /ResumeMatcher/GetDbResumes
+        // Returns: [{ id, fileName, uploadedBy, uploadedAt }]
+        // NOTE: no filePath — bytes are stored as blob in DB
+        const res = await fetch('/ResumeMatcher/GetDbResumes');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        dbResumes = await res.json();
+        renderDdList(dbResumes);
+    } catch (e) {
+        document.getElementById('dbDdList').innerHTML =
+            `<div class="db-dd-empty">⚠️ Could not load: ${esc(e.message)}</div>`;
+        document.getElementById('dbDdCount').textContent = 'Error';
+    }
+}
+
+function renderDdList(items) {
+    document.getElementById('dbDdCount').textContent =
+        items.length + ' resume' + (items.length !== 1 ? 's' : '');
+
+    if (!items.length) {
+        document.getElementById('dbDdList').innerHTML =
+            '<div class="db-dd-empty">📭 No resumes found in database.</div>';
+        return;
+    }
+
+    document.getElementById('dbDdList').innerHTML = items.map(item => {
+        const ext  = (item.fileName || '').split('.').pop().toLowerCase();
+        const icon = ext === 'pdf' ? '📄' : ext === 'docx' ? '📝' : '📃';
+        const date = item.uploadedAt
+            ? new Date(item.uploadedAt).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })
+            : '';
+        const sel  = dbDdSelected.has(String(item.id));
+        return `
+        <div class="db-dd-item${sel?' selected':''}" id="dditem-${esc(item.id)}"
+             data-dbid="${esc(item.id)}" data-filename="${esc(item.fileName)}">
+            <input type="checkbox" ${sel?'checked':''}
+                   onchange="ddToggleItem(this,'${esc(item.id)}','${esc(item.fileName)}')" />
+            <span class="db-dd-item-icon">${icon}</span>
+            <div class="db-dd-item-info">
+                <div class="db-dd-item-name" title="${esc(item.fileName)}">${esc(item.fileName)}</div>
+                <div class="db-dd-item-meta">${item.uploadedBy ? esc(item.uploadedBy) + ' · ' : ''}${date}</div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function filterDdList() {
+    const q = document.getElementById('dbDdSearch').value.toLowerCase().trim();
+    const filtered = q
+        ? dbResumes.filter(r => (r.fileName||'').toLowerCase().includes(q) || (r.uploadedBy||'').toLowerCase().includes(q))
+        : dbResumes;
+    renderDdList(filtered);
+}
+
+function ddToggleItem(cb, dbId, fileName) {
+    const itemEl = cb.closest('.db-dd-item');
+    if (cb.checked) {
+        dbDdSelected.add(String(dbId));
+        itemEl.classList.add('selected');
+    } else {
+        dbDdSelected.delete(String(dbId));
+        itemEl.classList.remove('selected');
+    }
+    updateDdFooter();
+}
+
+function ddSelectAll() {
+    const visible = document.querySelectorAll('.db-dd-item');
+    const allSel  = [...visible].every(el => dbDdSelected.has(el.dataset.dbid));
+    visible.forEach(el => {
+        const cb = el.querySelector('input[type="checkbox"]');
+        if (allSel) {
+            dbDdSelected.delete(el.dataset.dbid);
+            el.classList.remove('selected');
+            if (cb) cb.checked = false;
+        } else {
+            dbDdSelected.add(el.dataset.dbid);
+            el.classList.add('selected');
+            if (cb) cb.checked = true;
+        }
     });
-    document.getElementById('matchForm')?.addEventListener('submit', function () {
-        document.getElementById('submitBtn').disabled = true;
-        document.getElementById('loadingOv').classList.add('on');
+    updateDdFooter();
+}
+
+function updateDdFooter() {
+    const n = dbDdSelected.size;
+    document.getElementById('dbDdFooterInfo').textContent =
+        n + ' resume' + (n !== 1 ? 's' : '') + ' selected';
+    document.getElementById('dbDdAddBtn').disabled = n === 0;
+}
+
+function confirmDbSelection() {
+    // Merge newly selected into dbQueued (avoid duplicates)
+    dbResumes.forEach(r => {
+        if (dbDdSelected.has(String(r.id))) {
+            if (!dbQueued.find(q => q.dbId === String(r.id))) {
+                dbQueued.push({ dbId: String(r.id), fileName: r.fileName });
+            }
+        }
+    });
+    closeDbDropdown();
+    renderAllChips();
+    updateQueueInfo();
+}
+
+function toggleDbDropdown() {
+    const dd  = document.getElementById('dbDropdown');
+    const btn = document.getElementById('dbTrigger');
+    const isOpen = dd.classList.contains('open');
+    if (isOpen) { closeDbDropdown(); } else { openDbDropdown(); }
+}
+
+function openDbDropdown() {
+    document.getElementById('dbDropdown').classList.add('open');
+    document.getElementById('dbTrigger').classList.add('open');
+    // Re-sync checkboxes with current dbDdSelected state
+    document.querySelectorAll('.db-dd-item').forEach(el => {
+        const cb = el.querySelector('input[type="checkbox"]');
+        const sel = dbDdSelected.has(el.dataset.dbid);
+        if (cb) cb.checked = sel;
+        el.classList.toggle('selected', sel);
+    });
+    updateDdFooter();
+}
+
+function closeDbDropdown() {
+    document.getElementById('dbDropdown').classList.remove('open');
+    document.getElementById('dbTrigger').classList.remove('open');
+}
+
+// Close dropdown if user clicks outside
+document.addEventListener('click', e => {
+    const wrap = document.getElementById('dbDropdownWrap');
+    if (wrap && !wrap.contains(e.target))
+        closeDbDropdown();
+});
+
+// ── Render all queued file chips ──────────────────────────────────────────
+let browserFileList = new DataTransfer(); // tracks browser-selected files
+
+function renderAllChips() {
+    const box = document.getElementById('fileChips');
+    let html = '';
+
+    // Browser files
+    Array.from(browserFileList.files).forEach((f, i) => {
+        html += `<span class="file-chip file-chip-browse">
+                    📎 ${esc(f.name)}
+                    <button type="button" class="file-chip-remove" onclick="removeBrowserFile(${i})" title="Remove">×</button>
+                 </span>`;
     });
 
-    function toggleDetail(id, btn) {
-        const row = document.getElementById(id);
-        if (!row) return;
-        const show = row.style.display === 'none';
-        row.style.display = show ? '' : 'none';
-        btn.textContent = show ? '▲' : '▼';
-    }
-
-    function copyUrl(url, btn) {
-        navigator.clipboard.writeText(url).then(() => {
-            const o = btn.innerHTML; btn.innerHTML = '✓'; btn.style.color = '#22863a';
-            setTimeout(() => { btn.innerHTML = o; btn.style.color = ''; }, 1500);
-        }).catch(() => {
-            const ta = document.createElement('textarea');
-            ta.value = url; document.body.appendChild(ta); ta.select();
-            document.execCommand('copy'); document.body.removeChild(ta);
-        });
-    }
-
-    const selected = {};
-    function toggleCmp(cb) {
-        const idx = cb.dataset.idx, data = JSON.parse(cb.dataset.json);
-        const row = document.getElementById('row-' + idx);
-        if (cb.checked) {
-            if (Object.keys(selected).length >= 5) { alert('Maximum 5 resumes can be compared.'); cb.checked = false; return; }
-            selected[idx] = data; row?.classList.add('row-sel');
-        } else { delete selected[idx]; row?.classList.remove('row-sel'); }
-        updateCmpBar();
-    }
-    function updateCmpBar() {
-        const n = Object.keys(selected).length;
-        document.getElementById('cmpCount').textContent = n + ' resume' + (n !== 1 ? 's' : '') + ' selected';
-        document.getElementById('cmpBar').classList.toggle('show', n >= 2);
-    }
-    function clearCmp() {
-        document.querySelectorAll('.cmp-cb').forEach(cb => {
-            cb.checked = false; document.getElementById('row-' + cb.dataset.idx)?.classList.remove('row-sel');
-        });
-        for (const k in selected) delete selected[k]; updateCmpBar();
-    }
-    function openCmpModal() {
-        const cands = Object.values(selected);
-        if (cands.length < 2) { alert('Select at least 2 resumes to compare.'); return; }
-        const fields = [
-            ['Name', c=>c.name],['File', c=>c.file],['Score', c=>c.score],
-            ['Status', c=>c.status],['Type', c=>c.type],['Experience', c=>c.exp],
-            ['Domain', c=>c.domain],['Match Tier', c=>c.tier],
-            ['Locations', c=>c.locs||'—'],['Companies', c=>c.companies||'—'],
-            ['Career Break', c=>c.careerBreak],['Emp. Gap', c=>c.empGap],
-            ['Matched Skills', c=>c.matched||'—'],['Missing Skills', c=>c.missing||'—'],
-            ['Resume URL', c=>`<a href="${c.viewUrl}" target="_blank" style="color:#0366d6;font-size:11px;word-break:break-all;">${c.viewUrl}</a>`],
-        ];
-        let html = '<table class="cmp"><thead><tr><th>Field</th>';
-        cands.forEach(c => { html += `<th>${c.name||c.file}</th>`; });
-        html += '</tr></thead><tbody>';
-        fields.forEach(([label, fn]) => {
-            html += `<tr><td class="rl">${label}</td>`;
-            cands.forEach(c => { html += `<td>${fn(c)||'—'}</td>`; });
-            html += '</tr>';
-        });
-        html += '</tbody></table>';
-        document.getElementById('cmpBody').innerHTML = html;
-        document.getElementById('cmpModal').classList.add('open');
-    }
-    function closeCmpModal() { document.getElementById('cmpModal').classList.remove('open'); }
-    document.getElementById('cmpModal')?.addEventListener('click', e => {
-        if (e.target === document.getElementById('cmpModal')) closeCmpModal();
+    // DB queued
+    dbQueued.forEach((q, i) => {
+        html += `<span class="file-chip file-chip-db">
+                    🗄️ ${esc(q.fileName)}
+                    <button type="button" class="file-chip-remove" onclick="removeDbQueued(${i})" title="Remove">×</button>
+                 </span>`;
     });
 
-    function applyFilters() {
-        const fType   = (document.getElementById('fType')?.value||'').toLowerCase();
-        const fStatus = (document.getElementById('fStatus')?.value||'').toLowerCase();
-        const fMin    = parseFloat(document.getElementById('fMinScore')?.value)||0;
-        const fLoc    = (document.getElementById('fLocation')?.value||'').toLowerCase().trim();
-        document.querySelectorAll('#resultsTable tbody tr[id^="row-"]').forEach(row => {
-            const type = (row.dataset.type||'').toLowerCase(), status = (row.dataset.status||'').toLowerCase();
-            const score = parseFloat(row.dataset.score)||0, loc = (row.dataset.loc||'').toLowerCase();
-            let show = true;
-            if (fType   && !type.includes(fType))     show = false;
-            if (fStatus && !status.includes(fStatus)) show = false;
-            if (fMin    && score < fMin)               show = false;
-            if (fLoc    && !loc.includes(fLoc))        show = false;
-            const det = document.getElementById('det-'+row.id.replace('row-',''));
-            row.style.display = show ? '' : 'none';
-            if (det && !show) det.style.display = 'none';
-        });
-    }
-    function resetFilters() {
-        ['fType','fStatus','fMinScore','fLocation'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-        applyFilters();
-    }
-    ['fType','fStatus','fMinScore','fLocation'].forEach(id => {
-        document.getElementById(id)?.addEventListener('input', applyFilters);
-        document.getElementById(id)?.addEventListener('change', applyFilters);
+    box.innerHTML = html;
+
+    // Update badge
+    const badge = document.getElementById('dbBadge');
+    badge.textContent = dbQueued.length;
+    badge.classList.toggle('hidden', dbQueued.length === 0);
+
+    updateQueueInfo();
+}
+
+function removeBrowserFile(idx) {
+    const dt = new DataTransfer();
+    Array.from(browserFileList.files).forEach((f, i) => { if (i !== idx) dt.items.add(f); });
+    browserFileList = dt;
+    document.getElementById('resumeFiles').files = dt.files;
+    renderAllChips();
+}
+
+function removeDbQueued(idx) {
+    const removed = dbQueued.splice(idx, 1)[0];
+    // Untick in dropdown
+    dbDdSelected.delete(removed.dbId);
+    document.querySelectorAll('.db-dd-item').forEach(el => {
+        if (el.dataset.dbid === removed.dbId) {
+            el.classList.remove('selected');
+            const cb = el.querySelector('input[type="checkbox"]');
+            if (cb) cb.checked = false;
+        }
     });
+    updateDdFooter();
+    renderAllChips();
+}
+
+function updateQueueInfo() {
+    const total = browserFileList.files.length + dbQueued.length;
+    document.getElementById('queueInfo').textContent =
+        total > 0 ? total + ' file' + (total !== 1 ? 's' : '') + ' queued' : '';
+}
+
+// ── Browser file input ────────────────────────────────────────────────────
+document.getElementById('resumeFiles')?.addEventListener('change', function () {
+    Array.from(this.files).forEach(f => browserFileList.items.add(f));
+    this.files = browserFileList.files;
+    renderAllChips();
+});
+
+// ── Form submit ───────────────────────────────────────────────────────────
+document.getElementById('matchForm')?.addEventListener('submit', function (e) {
+    // Send pipe-separated DB record IDs (e.g. "3|7|12")
+    const dbIds = dbQueued.map(q => q.dbId).join('|');
+    document.getElementById('dbFilePathsInput').value = dbIds;
+
+    if (browserFileList.files.length === 0 && dbQueued.length === 0) {
+        e.preventDefault();
+        alert('Please upload at least one resume or select one from the database.');
+        return;
+    }
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('loadingOv').classList.add('on');
+});
+
+// ═══════════════════════════════════════════════════════
+//  FILTER — Type → Exp Year chain
+// ═══════════════════════════════════════════════════════
+
+function onTypeChange() {
+    const type     = document.getElementById('fType').value;
+    const expInput = document.getElementById('fExpYear');
+    const expLabel = document.getElementById('fExpLabel');
+    const lockTip  = document.getElementById('expLockTip');
+
+    if (type === 'Experienced') {
+        expInput.disabled = false;
+        expInput.placeholder = 'e.g. 2';
+        expLabel.style.color = '#6a737d';
+        lockTip.classList.remove('visible');
+    } else {
+        // Fresher or All — lock and clear exp year
+        expInput.disabled = true;
+        expInput.value = '';
+        expLabel.style.color = '#9ca3af';
+        lockTip.classList.add('visible');
+    }
+    applyFilters();
+}
+
+// Allow only digits and one decimal point in numeric filter inputs
+function validateExpInput(input) {
+    // Strip anything that isn't digit or decimal
+    let v = input.value.replace(/[^0-9.]/g, '');
+    // Only one decimal point
+    const parts = v.split('.');
+    if (parts.length > 2) v = parts[0] + '.' + parts.slice(1).join('');
+    input.value = v;
+}
+
+function blockNonNumeric(e) {
+    // Allow: backspace, delete, tab, escape, enter, arrows, decimal, digits
+    const allowed = ['Backspace','Delete','Tab','Escape','Enter','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','.'];
+    if (allowed.includes(e.key)) return;
+    if (e.key >= '0' && e.key <= '9') return;
+    e.preventDefault();
+}
+
+function applyFilters() {
+    const fStatus  = (document.getElementById('fStatus')?.value || '').toLowerCase();
+    const fType    = (document.getElementById('fType')?.value   || '').toLowerCase();
+    const fExpRaw  = document.getElementById('fExpYear')?.value.trim();
+    const fExpYear = fExpRaw !== '' ? parseFloat(fExpRaw) : null;
+    const fMin     = parseFloat(document.getElementById('fMinScore')?.value) || 0;
+    const fLoc     = (document.getElementById('fLocation')?.value || '').toLowerCase().trim();
+
+    document.querySelectorAll('#resultsTable tbody tr[id^="row-"]').forEach(row => {
+        const type     = (row.dataset.type     || '').toLowerCase();
+        const status   = (row.dataset.status   || '').toLowerCase();
+        const score    = parseFloat(row.dataset.score)    || 0;
+        const loc      = (row.dataset.loc      || '').toLowerCase();
+        const expYears = parseFloat(row.dataset.expYears) || 0;
+
+        let show = true;
+
+        if (fStatus && !status.includes(fStatus)) show = false;
+        if (fType   && type !== fType)             show = false;
+
+        // Exp year filter: only meaningful if Type = Experienced
+        if (fExpYear !== null && !isNaN(fExpYear)) {
+            if (type !== 'experienced') {
+                show = false;  // shouldn't be visible if not experienced
+            } else {
+                // Allow ±0.5 yr tolerance so "2" matches "2 yrs", "1yr 8mo" etc.
+                if (expYears < fExpYear - 0.4) show = false;
+            }
+        }
+
+        if (fMin && score < fMin) show = false;
+        if (fLoc && !loc.includes(fLoc)) show = false;
+
+        const det = document.getElementById('det-' + row.id.replace('row-', ''));
+        row.style.display    = show ? '' : 'none';
+        if (det && !show) det.style.display = 'none';
+    });
+}
+
+function resetFilters() {
+    document.getElementById('fStatus').value  = '';
+    document.getElementById('fType').value    = '';
+    document.getElementById('fExpYear').value = '';
+    document.getElementById('fMinScore').value = '';
+    document.getElementById('fLocation').value = '';
+    // Re-lock exp year
+    const expInput = document.getElementById('fExpYear');
+    const expLabel = document.getElementById('fExpLabel');
+    const lockTip  = document.getElementById('expLockTip');
+    if (expInput) { expInput.disabled = true; expInput.placeholder = 'e.g. 2'; }
+    if (expLabel) expLabel.style.color = '#9ca3af';
+    if (lockTip)  lockTip.classList.add('visible');
+    applyFilters();
+}
+
+// ═══════════════════════════════════════════════════════
+//  EXISTING FUNCTIONS
+// ═══════════════════════════════════════════════════════
+
+function toggleDetail(id, btn) {
+    const row = document.getElementById(id);
+    if (!row) return;
+    const show = row.style.display === 'none';
+    row.style.display = show ? '' : 'none';
+    btn.textContent = show ? '▲' : '▼';
+}
+
+function copyUrl(url, btn) {
+    navigator.clipboard.writeText(url).then(() => {
+        const o = btn.innerHTML; btn.innerHTML = '✓'; btn.style.color = '#22863a';
+        setTimeout(() => { btn.innerHTML = o; btn.style.color = ''; }, 1500);
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = url; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+    });
+}
+
+const selected = {};
+function toggleCmp(cb) {
+    const idx = cb.dataset.idx, data = JSON.parse(cb.dataset.json);
+    const row = document.getElementById('row-' + idx);
+    if (cb.checked) {
+        if (Object.keys(selected).length >= 5) { alert('Maximum 5 resumes can be compared.'); cb.checked = false; return; }
+        selected[idx] = data; row?.classList.add('row-sel');
+    } else { delete selected[idx]; row?.classList.remove('row-sel'); }
+    updateCmpBar();
+}
+function updateCmpBar() {
+    const n = Object.keys(selected).length;
+    document.getElementById('cmpCount').textContent = n + ' resume' + (n !== 1 ? 's' : '') + ' selected';
+    document.getElementById('cmpBar').classList.toggle('show', n >= 2);
+}
+function clearCmp() {
+    document.querySelectorAll('.cmp-cb').forEach(cb => {
+        cb.checked = false; document.getElementById('row-' + cb.dataset.idx)?.classList.remove('row-sel');
+    });
+    for (const k in selected) delete selected[k]; updateCmpBar();
+}
+function openCmpModal() {
+    const cands = Object.values(selected);
+    if (cands.length < 2) { alert('Select at least 2 resumes to compare.'); return; }
+    const fields = [
+        ['Name',c=>c.name],['File',c=>c.file],['Score',c=>c.score],
+        ['Status',c=>c.status],['Type',c=>c.type],['Experience',c=>c.exp],
+        ['Domain',c=>c.domain],['Match Tier',c=>c.tier],
+        ['Locations',c=>c.locs||'—'],['Companies',c=>c.companies||'—'],
+        ['Career Break',c=>c.careerBreak],['Emp. Gap',c=>c.empGap],
+        ['Matched Skills',c=>c.matched||'—'],['Missing Skills',c=>c.missing||'—'],
+        ['Resume URL',c=>`<a href="${c.viewUrl}" target="_blank" style="color:#0366d6;font-size:11px;word-break:break-all;">${c.viewUrl}</a>`],
+    ];
+    let html = '<table class="cmp"><thead><tr><th>Field</th>';
+    cands.forEach(c => { html += `<th>${c.name||c.file}</th>`; });
+    html += '</tr></thead><tbody>';
+    fields.forEach(([label,fn]) => {
+        html += `<tr><td class="rl">${label}</td>`;
+        cands.forEach(c => { html += `<td>${fn(c)||'—'}</td>`; });
+        html += '</tr>';
+    });
+    html += '</tbody></table>';
+    document.getElementById('cmpBody').innerHTML = html;
+    document.getElementById('cmpModal').classList.add('open');
+}
+function closeCmpModal() { document.getElementById('cmpModal').classList.remove('open'); }
+document.getElementById('cmpModal')?.addEventListener('click', e => {
+    if (e.target === document.getElementById('cmpModal')) closeCmpModal();
+});
+
+function esc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// Boot: load DB list
+loadDbResumes();
 </script>
 </body>
 </html>
