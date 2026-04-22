@@ -71,6 +71,30 @@ namespace Resume_NCDL.Controllers
         }
 
         // ═════════════════════════════════════════════════════════════════
+        //  GET  /ResumeMatcher/AllResults
+        // ═════════════════════════════════════════════════════════════════
+        [HttpGet]
+        public async Task<IActionResult> AllResults()
+        {
+            var results = await _db.ResumeMatchResults
+                .OrderByDescending(r => r.AnalyzedAt)
+                .ToListAsync();
+
+            return View(results);
+        }
+
+        // ═════════════════════════════════════════════════════════════════
+        //  POST  /ResumeMatcher/DeleteResult   (optional — single delete)
+        // ═════════════════════════════════════════════════════════════════
+        [HttpPost]
+        public async Task<IActionResult> DeleteResult(int id)
+        {
+            var r = await _db.ResumeMatchResults.FindAsync(id);
+            if (r != null) { _db.ResumeMatchResults.Remove(r); await _db.SaveChangesAsync(); }
+            return RedirectToAction(nameof(AllResults));
+        }
+
+        // ═════════════════════════════════════════════════════════════════
         //  POST  /ResumeMatcher/Analyze
         // ═════════════════════════════════════════════════════════════════
         [HttpPost]
@@ -309,6 +333,74 @@ namespace Resume_NCDL.Controllers
                             : (r.RawScore >= input.Threshold ? "MATCHED" : "NOT MATCHED");
                     }
                 }
+
+                // ── 5. Persist every result to DB ────────────────────────────────────
+                var jdSnippet = input.JdText.Length > 200
+                    ? input.JdText[..200] + "…"
+                    : input.JdText;
+
+                var toSave = apiResult.Results.Select(r =>
+                {
+                    double expYears = 0;
+                    if (!string.Equals(r.CandidateType, "Fresher",
+                            StringComparison.OrdinalIgnoreCase) &&
+                        !string.IsNullOrWhiteSpace(r.Experience))
+                    {
+                        var m = System.Text.RegularExpressions.Regex.Match(
+                            r.Experience, @"(\d+(?:\.\d+)?)");
+                        if (m.Success)
+                            double.TryParse(m.Value,
+                                System.Globalization.NumberStyles.Any,
+                                System.Globalization.CultureInfo.InvariantCulture,
+                                out expYears);
+                    }
+
+                    return new ResumeMatchResult
+                    {
+                        AnalyzedAt = DateTime.UtcNow,
+                        OriginalFileName = r.File,
+                        SavedFileName = r.SavedFileName,
+                        PublicUrl = r.PublicUrl,
+                        CandidateName = r.Name,
+                        Email = r.Email,
+                        Phone = r.Phone,
+                        CandidateType = r.CandidateType,
+                        Experience = r.Experience,
+                        ExpYears = expYears,
+                        RawScore = r.RawScore,
+                        DisplayScore = r.NumericScore,
+                        IsScoreSuppressed = r.IsScoreSuppressed,
+                        Threshold = input.Threshold,
+                        Status = r.Status,
+                        Tier = r.Tier,
+                        TierDescription = r.TierDescription,
+                        Domain = r.Domain,
+                        JdDomain = r.JdDomain,
+                        DomainSwitch = r.DomainSwitch,
+                        DomainSwitchFrom = r.DomainSwitchFrom,
+                        DomainMismatch = r.DomainMismatch,
+                        NearMiss = r.NearMiss,
+                        CareerBreak = r.CareerBreak,
+                        CareerBreakDetail = r.CareerBreakDetail,
+                        EmploymentGap = r.EmploymentGap,
+                        EmploymentGapDetail = r.EmploymentGapDetail,
+                        MatchedSkills = string.Join(",", r.MatchedSkills ?? new()),
+                        MissingSkills = string.Join(",", r.MissingSkills ?? new()),
+                        SkillCoveragePct = r.SkillCoveragePct,
+                        TotalJdSkills = r.TotalJdSkills,
+                        StayingLocation = r.StayingLocation,
+                        WorkLocations = r.Locations,
+                        CompanyCount = r.CompanyCount,
+                        Education = r.Education,
+                        Internship = r.Internship,
+                        Projects = r.Projects,
+                        JdSnippet = jdSnippet,
+                        Summary = r.Summary
+                    };
+                }).ToList();
+
+                _db.ResumeMatchResults.AddRange(toSave);
+                await _db.SaveChangesAsync();
 
                 return View("Index", new ResumeMatcherViewModel
                 {

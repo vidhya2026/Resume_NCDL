@@ -542,6 +542,16 @@
             @if (api.WrongProfiles > 0)    { <div class="s-tile t-mis"><div class="sv">@api.WrongProfiles</div><div class="sl">Wrong Profile</div></div> }
             @if (api.DomainMismatches > 0) { <div class="s-tile t-mis"><div class="sv">@api.DomainMismatches</div><div class="sl">Domain Mismatch</div></div> }
         </div>
+        <!-- Add this just above the filter-bar div, after the summary-strip -->
+<div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+    <a href="/ResumeMatcher/AllResults"
+       style="display:inline-flex;align-items:center;gap:7px;
+              background:#0366d6;color:#fff;border:none;border-radius:4px;
+              padding:9px 18px;font-size:13px;font-weight:600;
+              text-decoration:none;font-family:inherit;">
+        📊 View Overall Results
+    </a>
+</div>
 
         <!-- FILTER BAR — Type → Exp Year chain + Status + Score + Location -->
         <div class="filter-bar" id="filterBar">

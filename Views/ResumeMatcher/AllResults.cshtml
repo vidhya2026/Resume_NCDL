@@ -1,0 +1,571 @@
+﻿@model List<Resume_NCDL.Models.ResumeMatchResult>
+@{
+    ViewData["Title"] = "Overall Results";
+    int total       = Model.Count;
+    int matched     = Model.Count(r => r.Status.Contains("MATCHED") && !r.Status.Contains("NOT") && !r.DomainMismatch);
+    int notMatched  = Model.Count(r => r.Status.Contains("NOT MATCHED"));
+    int nearMiss    = Model.Count(r => r.NearMiss);
+    int domainMis   = Model.Count(r => r.DomainMismatch);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Overall Results — Resume Matcher</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f5f7;color:#24292e;font-size:14px;line-height:1.55}
+
+.topbar{background:#fff;border-bottom:1px solid #d1d5da;padding:0 28px;height:52px;display:flex;align-items:center;gap:10px}
+.topbar-logo{width:26px;height:26px;background:#0366d6;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff}
+.topbar h1{font-size:15px;font-weight:600}
+.topbar-right{margin-left:auto;font-size:12px;color:#6a737d;background:#f6f8fa;border:1px solid #d1d5da;padding:3px 10px;border-radius:4px}
+.topbar-back{font-size:12px;color:#0366d6;text-decoration:none;font-weight:600;background:#f0f7ff;border:1px solid #c8e1ff;padding:4px 12px;border-radius:4px}
+.topbar-back:hover{background:#dbeafe}
+
+.wrap{max-width:1200px;margin:0 auto;padding:24px 20px 60px}
+.page-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.page-hd h2{font-size:18px;font-weight:700}
+.page-hd-sub{font-size:12px;color:#6a737d;margin-top:2px}
+
+/* Summary tiles */
+.summary-strip{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.s-tile{background:#fff;border:1px solid #d1d5da;border-radius:6px;padding:12px 18px;text-align:center;min-width:88px;flex:1}
+.sv{font-size:26px;font-weight:700}.sl{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#6a737d;font-weight:600;margin-top:2px}
+.t-total .sv{color:#24292e}.t-match .sv{color:#22863a}.t-no .sv{color:#cb2431}.t-near .sv{color:#b08800}.t-mis .sv{color:#6f42c1}
+
+/* Filter bar */
+.filter-bar{background:#fff;border:1px solid #d1d5da;border-radius:6px;padding:10px 14px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+.fg{display:flex;flex-direction:column;gap:3px}
+.fg label{font-size:10px;font-weight:600;color:#6a737d;text-transform:uppercase;letter-spacing:.4px}
+.fg select,.fg input[type="text"],.fg input[type="number"]{border:1px solid #d1d5da;border-radius:4px;padding:5px 8px;font-size:12.5px;font-family:inherit;color:#24292e;background:#fff;min-width:100px}
+.fg select:focus,.fg input:focus{outline:none;border-color:#0366d6}
+.fg-exp-year{position:relative}
+.fg-exp-year input:disabled{background:#f6f8fa;color:#9ca3af;cursor:not-allowed;border-color:#e1e4e8}
+.exp-lock-tip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#24292e;color:#fff;font-size:10px;border-radius:4px;padding:4px 8px;pointer-events:none;z-index:20}
+.exp-lock-tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:#24292e}
+.fg-exp-year:hover .exp-lock-tip.visible{display:block}
+
+/* Date range */
+.fg input[type="date"]{border:1px solid #d1d5da;border-radius:4px;padding:5px 8px;font-size:12px;font-family:inherit;color:#24292e;background:#fff}
+.fg input[type="date"]:focus{outline:none;border-color:#0366d6}
+
+.btn-ghost{background:#fff;border:1px solid #d1d5da;border-radius:4px;padding:5px 12px;font-size:12px;font-weight:600;font-family:inherit;color:#24292e;cursor:pointer}
+.btn-ghost:hover{background:#f6f8fa}
+
+/* Result count badge */
+.result-count{font-size:11px;color:#6a737d;padding:4px 0;display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.result-count strong{color:#24292e}
+.filter-dot{display:inline-block;width:6px;height:6px;background:#0366d6;border-radius:50%;vertical-align:middle}
+
+/* Table */
+.table-wrap{background:#fff;border:1px solid #d1d5da;border-radius:6px;overflow:hidden}
+table.rt{width:100%;border-collapse:collapse;font-size:13px}
+table.rt thead th{background:#f6f8fa;padding:9px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:#6a737d;text-align:left;border-bottom:1px solid #d1d5da;white-space:nowrap}
+table.rt tbody tr{border-bottom:1px solid #eaecef}
+table.rt tbody tr:last-child{border-bottom:none}
+table.rt tbody tr.main-row:hover{background:#f6f8fa}
+table.rt td{padding:9px 12px;vertical-align:middle}
+.td-file{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#6a737d;font-family:monospace}
+.td-name{font-weight:600;color:#24292e}
+.td-score{font-weight:700;font-size:13px;font-family:monospace}
+.td-date{font-size:11px;color:#9ca3af;white-space:nowrap}
+
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}
+.p-match{background:#dcffe4;color:#22863a;border:1px solid #a2ddb8}
+.p-no{background:#ffeef0;color:#cb2431;border:1px solid #ffc5cb}
+.p-near{background:#fff8c5;color:#735c0f;border:1px solid #e6d06b}
+.p-mis{background:#f3e0ff;color:#6f42c1;border:1px solid #d6acf0}
+.p-inv{background:#f6f8fa;color:#6a737d;border:1px solid #d1d5da}
+
+.sc-good{color:#22863a}.sc-med{color:#0366d6}.sc-low{color:#b08800}.sc-bad{color:#cb2431}.sc-na{color:#6f42c1}
+
+.ftag{font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;margin-left:4px;white-space:nowrap;display:inline-block;vertical-align:middle}
+.ftag-mis{background:#f3e0ff;color:#6f42c1}
+.ftag-break{background:#fff8c5;color:#735c0f}
+.ftag-gap{background:#dbeafe;color:#1d4ed8}
+.ftag-near{background:#fff8c5;color:#735c0f}
+
+/* Detail row */
+tr.detail-row td{padding:0}
+.detail-panel{background:#f6f8fa;border-top:1px solid #e1e4e8}
+.det-hd{background:#24292e;color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px;font-size:13px;flex-wrap:wrap}
+.det-hd-name{font-weight:700}.det-hd-score{font-family:monospace;font-size:15px;font-weight:700}
+.det-hd-thresh{font-size:11px;color:rgba(255,255,255,.5)}
+table.kv{width:100%;border-collapse:collapse}
+table.kv tr{border-bottom:1px solid #e1e4e8}
+table.kv tr:last-child{border-bottom:none}
+table.kv tr:nth-child(even) td{background:#fafbfc}
+table.kv td{padding:9px 16px;font-size:13px;vertical-align:top}
+table.kv td.k{font-weight:600;color:#24292e;width:190px;white-space:nowrap}
+table.kv td.v{color:#444d56}
+.kv-sec td{background:#eaecef!important;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#6a737d;padding:5px 16px}
+.sk-list{display:flex;flex-wrap:wrap;gap:4px}
+.sk{font-size:11px;padding:2px 7px;border-radius:3px;font-weight:500;font-family:monospace}
+.sk-y{background:#dcffe4;color:#22863a;border:1px solid #a2ddb8}
+.sk-n{background:#ffeef0;color:#cb2431;border:1px solid #ffc5cb}
+.v-na{color:#9ca3af;font-style:italic;font-size:12px}
+.fresher-badge{display:inline-flex;align-items:center;gap:5px;background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;border-radius:12px;font-size:10px;font-weight:700;padding:2px 9px;text-transform:uppercase;letter-spacing:.4px;vertical-align:middle;margin-left:8px}
+
+.ib{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid #d1d5da;border-radius:4px;background:#fff;color:#6a737d;text-decoration:none;cursor:pointer;font-size:12px;transition:border-color .15s,color .15s}
+.ib:hover{border-color:#0366d6;color:#0366d6;background:#f0f7ff}
+.ib.dl:hover{border-color:#22863a;color:#22863a;background:#f0fff4}
+.ib.lk:hover{border-color:#6f42c1;color:#6f42c1;background:#f5f0ff}
+
+/* Empty state */
+.empty-state{text-align:center;padding:60px 20px;color:#6a737d}
+.empty-state-icon{font-size:48px;margin-bottom:12px}
+.empty-state h3{font-size:16px;font-weight:600;margin-bottom:6px;color:#24292e}
+.empty-state p{font-size:13px}
+
+footer{text-align:center;padding:22px;font-size:11px;color:#6a737d;border-top:1px solid #e1e4e8;margin-top:8px}
+
+@@media(max-width:720px){
+    table.rt thead th:nth-child(n+5){display:none}
+    table.rt tbody td:nth-child(n+5){display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="topbar-logo">RM</div>
+    <h1>Resume Matcher</h1>
+    <a href="/ResumeMatcher" class="topbar-back">← Back to Matcher</a>
+    <span class="topbar-right">Overall Results History</span>
+</div>
+
+<div class="wrap">
+
+    <div class="page-hd">
+        <div>
+            <h2>📊 Overall Results</h2>
+            <div class="page-hd-sub">All resume analysis results — past &amp; present</div>
+        </div>
+    </div>
+
+    <!-- SUMMARY TILES -->
+    <div class="summary-strip">
+        <div class="s-tile t-total"><div class="sv">@total</div><div class="sl">Total</div></div>
+        <div class="s-tile t-match"><div class="sv">@matched</div><div class="sl">Matched</div></div>
+        <div class="s-tile t-no"><div class="sv">@notMatched</div><div class="sl">Not Matched</div></div>
+        @if (nearMiss > 0)   { <div class="s-tile t-near"><div class="sv">@nearMiss</div><div class="sl">Near Miss</div></div> }
+        @if (domainMis > 0)  { <div class="s-tile t-mis"><div class="sv">@domainMis</div><div class="sl">Domain Mismatch</div></div> }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <h3>No results yet</h3>
+            <p>Run your first resume analysis to see results here.</p>
+        </div>
+    }
+    else
+    {
+        <!-- FILTER BAR -->
+        <div class="filter-bar" id="filterBar">
+
+            @* {{-- 1. Match Type (extra filter you asked for) --}} *@
+            <div class="fg">
+                <label>Match Type</label>
+                <select id="fMatchType" onchange="applyFilters()">
+                    <option value="">All</option>
+                    <option value="matched">Matched</option>
+                    <option value="not matched">Not Matched</option>
+                    <option value="domain mismatch">Domain Mismatch</option>
+                    <option value="near miss">Near Miss</option>
+                </select>
+            </div>
+
+            @* {{-- 2. Candidate Type --}} *@
+            <div class="fg">
+                <label>Candidate Type</label>
+                <select id="fType" onchange="onTypeChange()">
+                    <option value="">All</option>
+                    <option value="fresher">Fresher</option>
+                    <option value="experienced">Experienced</option>
+                </select>
+            </div>
+
+            @* {{-- 3. Experience Years (locked until Type = Experienced) --}} *@
+            <div class="fg fg-exp-year" id="fExpWrap">
+                <label id="fExpLabel" style="color:#9ca3af;">Experience (yrs)</label>
+                <input type="number" id="fExpYear" min="0" max="50" step="0.5"
+                       placeholder="e.g. 2" disabled
+                       oninput="validateExpInput(this);applyFilters();"
+                       onkeydown="blockNonNumeric(event)" />
+                <span class="exp-lock-tip visible" id="expLockTip">
+                    Select &ldquo;Experienced&rdquo; type first
+                </span>
+            </div>
+
+            @* {{-- 4. Min Score --}} *@
+            <div class="fg">
+                <label>Min Score (%)</label>
+                <input type="number" id="fMinScore" min="0" max="100" placeholder="0"
+                       style="width:72px;"
+                       oninput="applyFilters()" onkeydown="blockNonNumeric(event)" />
+            </div>
+
+            @* {{-- 5. Location --}} *@
+            <div class="fg">
+                <label>Location</label>
+                <input type="text" id="fLocation" placeholder="e.g. Chennai"
+                       style="width:120px;" oninput="applyFilters()" />
+            </div>
+
+            @* {{-- 6. Date From --}} *@
+            <div class="fg">
+                <label>Date From</label>
+                <input type="date" id="fDateFrom" onchange="applyFilters()" />
+            </div>
+
+            @* {{-- 7. Date To --}} *@
+            <div class="fg">
+                <label>Date To</label>
+                <input type="date" id="fDateTo" onchange="applyFilters()" />
+            </div>
+
+            <button class="btn-ghost" onclick="resetFilters()">↺ Reset</button>
+        </div>
+
+        <div class="result-count" id="resultCount">
+            Showing <strong id="visibleCount">@Model.Count</strong> of @Model.Count results
+        </div>
+
+        <div class="table-wrap">
+            <table class="rt" id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Resume File</th>
+                        <th>Candidate</th>
+                        <th>Type</th>
+                        <th>Score</th>
+                        <th>Status</th>
+                        <th>Experience</th>
+                        <th>Domain</th>
+                        <th>Locations</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var item in Model.Select((r, i) => new { r, i }))
+                {
+                    var res = item.r;
+                    var idx = item.i;
+
+                    bool isFresher    = string.Equals(res.CandidateType, "Fresher", StringComparison.OrdinalIgnoreCase);
+                    bool isDomainMis  = res.DomainMismatch;
+                    bool isActuallyMatched = !isDomainMis &&
+                        res.DisplayScore >= res.Threshold &&
+                        !res.Status.Contains("NOT");
+
+                    string scoreClass = res.IsScoreSuppressed ? "sc-na"
+                        : res.DisplayScore >= 60 ? "sc-good"
+                        : res.DisplayScore >= 50 ? "sc-med"
+                        : res.DisplayScore >= 40 ? "sc-low" : "sc-bad";
+
+                    string pillCls = isDomainMis ? "p-mis"
+                        : res.NearMiss ? "p-near"
+                        : isActuallyMatched ? "p-match" : "p-no";
+                    string pillTxt = isDomainMis ? "Domain Mismatch"
+                        : res.NearMiss ? "Near Miss"
+                        : isActuallyMatched ? "Matched" : "Not Matched";
+
+                    string dataType   = isFresher ? "fresher" : "experienced";
+                    string dataStatus = isDomainMis ? "domain mismatch"
+                        : res.NearMiss ? "near miss"
+                        : isActuallyMatched ? "matched" : "not matched";
+                    string dataLoc    = (res.WorkLocations + " " + res.StayingLocation).ToLower();
+                    string dateStr    = res.AnalyzedAt.ToString("yyyy-MM-dd");
+
+                    var matchedSkills  = (res.MatchedSkills ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+                    var missingSkills  = (res.MissingSkills ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+
+                    string viewUrl = res.PublicUrl;
+                    string dlUrl   = Url.Action("DownloadResume", "ResumeMatcher",
+                                        new { savedFileName = res.SavedFileName, originalName = res.OriginalFileName }) ?? "#";
+
+                    <tr class="main-row" id="arow-@idx"
+                        data-type="@dataType"
+                        data-status="@dataStatus"
+                        data-score="@res.DisplayScore.ToString("F1")"
+                        data-loc="@dataLoc"
+                        data-exp-years="@res.ExpYears.ToString("F1")"
+                        data-date="@dateStr">
+
+                        <td class="td-date">
+                            @res.AnalyzedAt.ToLocalTime().ToString("dd MMM yyyy")<br/>
+                            <span style="font-size:10px;color:#bbb;">@res.AnalyzedAt.ToLocalTime().ToString("HH:mm")</span>
+                        </td>
+                        <td class="td-file" title="@res.OriginalFileName">
+                            @res.OriginalFileName
+                            @if (res.NearMiss) { <span class="ftag ftag-near">near miss</span> }
+                        </td>
+                        <td class="td-name">@(res.CandidateName == "Name Not Found" || string.IsNullOrWhiteSpace(res.CandidateName) ? "—" : res.CandidateName)</td>
+                        <td style="color:#6a737d;">@(isFresher ? "Fresher" : "Experienced")</td>
+                        <td class="td-score @scoreClass">
+                            @if (res.IsScoreSuppressed) { <text>N/A</text> }
+                            else { @res.DisplayScore.ToString("F1")<text>%</text> }
+                        </td>
+                        <td><span class="pill @pillCls">@pillTxt</span></td>
+                        <td style="color:#6a737d;">
+                            @(string.IsNullOrWhiteSpace(res.Experience) || res.Experience == "Not determinable" ? "—" : res.Experience)
+                        </td>
+                        <td>
+                            @res.Domain
+                            @if (isDomainMis) { <span class="ftag ftag-mis">mismatch</span> }
+                            @if (!isFresher && res.CareerBreak) { <span class="ftag ftag-break">career break</span> }
+                            @if (isFresher && res.EmploymentGap) { <span class="ftag ftag-gap">emp. gap</span> }
+                        </td>
+                        <td style="color:#6a737d;">
+                            @(string.IsNullOrWhiteSpace(res.WorkLocations) || res.WorkLocations == "Not mentioned" ? "—" : res.WorkLocations)
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:3px;align-items:center;">
+                                @if (!string.IsNullOrWhiteSpace(viewUrl) && viewUrl != "#")
+                                {
+                                    <a class="ib dl" href="@dlUrl" title="Download" download>⬇</a>
+                                    <a class="ib lk" href="@viewUrl" title="Open" target="_blank" rel="noopener">↗</a>
+                                }
+                                <button class="ib" title="View details" onclick="toggleDetail('adet-@idx',this)">▼</button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- DETAIL ROW -->
+                    <tr class="detail-row" id="adet-@idx" style="display:none;">
+                        <td colspan="10">
+                            <div class="detail-panel">
+                                <div class="det-hd">
+                                    <span class="det-hd-name">RESUME MATCHING REPORT</span>
+                                    @if (isFresher) { <span class="fresher-badge">🎓 Fresher</span> }
+                                    <span style="color:rgba(255,255,255,.35)">|</span>
+                                    <span class="det-hd-thresh">Threshold: @res.Threshold%</span>
+                                    <span class="det-hd-score @scoreClass">
+                                        @(res.IsScoreSuppressed ? "N/A" : res.DisplayScore.ToString("F1") + "%")
+                                    </span>
+                                    <span class="pill @pillCls">@pillTxt</span>
+                                    <span style="margin-left:auto;font-size:11px;color:rgba(255,255,255,.5);">
+                                        Analyzed: @res.AnalyzedAt.ToLocalTime().ToString("dd MMM yyyy, HH:mm")
+                                    </span>
+                                </div>
+                                <table class="kv">
+                                    <tr class="kv-sec"><td colspan="2">Resume File</td></tr>
+                                    <tr><td class="k">Original Filename</td><td class="v" style="font-family:monospace;font-size:12px;">@res.OriginalFileName</td></tr>
+                                    @if (!string.IsNullOrWhiteSpace(viewUrl) && viewUrl != "#")
+                                    {
+                                        <tr><td class="k">Resume URL</td><td class="v">
+                                            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                                                <a href="@viewUrl" target="_blank" rel="noopener" style="color:#0366d6;font-size:12px;font-family:monospace;word-break:break-all;">@viewUrl</a>
+                                                <a class="ib lk" href="@viewUrl" target="_blank" rel="noopener" title="Open">↗</a>
+                                                <a class="ib dl" href="@dlUrl" title="Download" download>⬇</a>
+                                            </div>
+                                        </td></tr>
+                                    }
+                                    <tr class="kv-sec"><td colspan="2">Candidate Info</td></tr>
+                                    <tr><td class="k">Name</td><td class="v">@(string.IsNullOrWhiteSpace(res.CandidateName) || res.CandidateName == "Name Not Found" ? "<span class='v-na'>Not mentioned</span>" : res.CandidateName)</td></tr>
+                                    <tr><td class="k">Email</td><td class="v">@(string.IsNullOrWhiteSpace(res.Email) || res.Email == "Not mentioned" ? "<span class='v-na'>Not mentioned</span>" : res.Email)</td></tr>
+                                    <tr><td class="k">Phone</td><td class="v">@(string.IsNullOrWhiteSpace(res.Phone) || res.Phone == "Not mentioned" ? "<span class='v-na'>Not mentioned</span>" : res.Phone)</td></tr>
+                                    <tr><td class="k">Type</td><td class="v">
+                                        @if (isFresher) { <span class="pill" style="background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;">Fresher</span> }
+                                        else { <text>Experienced</text> }
+                                    </td></tr>
+                                    <tr><td class="k">Experience</td><td class="v">@(string.IsNullOrWhiteSpace(res.Experience) || res.Experience == "Not determinable" ? "<span class='v-na'>Not determinable</span>" : res.Experience)</td></tr>
+
+                                    <tr class="kv-sec"><td colspan="2">Match Result</td></tr>
+                                    <tr><td class="k">Match Score</td><td class="v @scoreClass" style="font-weight:700;font-family:monospace;font-size:14px;">
+                                        @(res.IsScoreSuppressed ? "N/A (domain mismatch)" : res.DisplayScore.ToString("F1") + "%")
+                                    </td></tr>
+                                    <tr><td class="k">Status</td><td class="v"><span class="pill @pillCls">@pillTxt</span>
+                                        <span style="font-size:11px;color:#6a737d;margin-left:6px;">
+                                            @res.DisplayScore.ToString("F1")% vs @res.Threshold% threshold
+                                        </span>
+                                    </td></tr>
+                                    <tr><td class="k">Match Tier</td><td class="v">@res.Tier</td></tr>
+                                    <tr><td class="k">JD Domain</td><td class="v">@(string.IsNullOrWhiteSpace(res.JdDomain) || res.JdDomain == "Unknown" ? "<span class='v-na'>Not determined</span>" : res.JdDomain)</td></tr>
+                                    <tr><td class="k">Resume Domain</td><td class="v">
+                                        @res.Domain
+                                        @if (isDomainMis) { <span style="color:#cb2431;font-size:11px;font-weight:600;"> (mismatch)</span> }
+                                    </td></tr>
+                                    <tr><td class="k">Domain Switch</td><td class="v">
+                                        @if (res.DomainSwitch) { <span style="color:#b08800;">Yes — @res.DomainSwitchFrom → @res.Domain</span> }
+                                        else { <text>No</text> }
+                                    </td></tr>
+
+                                    @if (!isFresher)
+                                    {
+                                        <tr class="kv-sec"><td colspan="2">Career History</td></tr>
+                                        <tr><td class="k">Career Break</td><td class="v">
+                                            @if (res.CareerBreak) { <span style="color:#b08800;font-weight:600;">⚠ @res.CareerBreakDetail</span> }
+                                            else { <span style="color:#22863a;">No career break detected</span> }
+                                        </td></tr>
+                                        <tr><td class="k">Employment Gap</td><td class="v">
+                                            @if (res.EmploymentGap) { <span style="color:#0366d6;font-weight:600;">⚠ @res.EmploymentGapDetail</span> }
+                                            else { <span style="color:#22863a;">No employment gap detected</span> }
+                                        </td></tr>
+                                        <tr><td class="k">Companies</td><td class="v">
+                                            @if (res.CompanyCount == 0) { <text>Not detected</text> }
+                                            else { @res.CompanyCount <text> @(res.CompanyCount == 1 ? "company" : "companies")</text> }
+                                        </td></tr>
+                                    }
+
+                                    @if (isFresher)
+                                    {
+                                        <tr class="kv-sec"><td colspan="2">Academic &amp; Practical Experience</td></tr>
+                                        <tr><td class="k">Education</td><td class="v">@(!string.IsNullOrWhiteSpace(res.Education) && res.Education != "Not mentioned" ? res.Education : "<span class='v-na'>Not mentioned</span>")</td></tr>
+                                        <tr><td class="k">Internship</td><td class="v">@(!string.IsNullOrWhiteSpace(res.Internship) && res.Internship != "Not mentioned" ? res.Internship : "<span class='v-na'>Not mentioned</span>")</td></tr>
+                                        <tr><td class="k">Projects</td><td class="v">@(!string.IsNullOrWhiteSpace(res.Projects) && res.Projects != "Not mentioned" ? res.Projects : "<span class='v-na'>Not mentioned</span>")</td></tr>
+                                        <tr><td class="k">Employment Gap</td><td class="v">
+                                            @if (res.EmploymentGap) { <span style="color:#0366d6;font-weight:600;">⚠ @res.EmploymentGapDetail</span> }
+                                            else { <span style="color:#22863a;">No employment gap detected</span> }
+                                        </td></tr>
+                                    }
+
+                                    <tr class="kv-sec"><td colspan="2">Skills</td></tr>
+                                    <tr><td class="k">Matched Skills</td><td class="v">
+                                        @if (matchedSkills.Any()) { <div class="sk-list">@foreach(var sk in matchedSkills.Take(14)){ <span class="sk sk-y">@sk</span> }</div> }
+                                        else { <span class="v-na">None matched</span> }
+                                    </td></tr>
+                                    <tr><td class="k">Missing Skills</td><td class="v">
+                                        @if (missingSkills.Any()) { <div class="sk-list">@foreach(var sk in missingSkills.Take(14)){ <span class="sk sk-n">@sk</span> }</div> }
+                                        else { <span class="v-na">None detected</span> }
+                                    </td></tr>
+
+                                    <tr class="kv-sec"><td colspan="2">Location</td></tr>
+                                    <tr><td class="k">Staying Location</td><td class="v">@(string.IsNullOrWhiteSpace(res.StayingLocation) || res.StayingLocation == "Not mentioned" ? "<span class='v-na'>Not mentioned</span>" : res.StayingLocation)</td></tr>
+                                    <tr><td class="k">Work Locations</td><td class="v">@(string.IsNullOrWhiteSpace(res.WorkLocations) || res.WorkLocations == "Not mentioned" ? "<span class='v-na'>Not mentioned</span>" : res.WorkLocations)</td></tr>
+
+                                    @if (!string.IsNullOrWhiteSpace(res.JdSnippet))
+                                    {
+                                        <tr class="kv-sec"><td colspan="2">Job Description (snippet)</td></tr>
+                                        <tr><td class="k">JD Text</td><td class="v" style="font-size:12px;color:#6a737d;font-style:italic;">@res.JdSnippet</td></tr>
+                                    }
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <footer>© 2026 Resume Matcher · AI-Powered Resume Screening</footer>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  FILTERS
+// ═══════════════════════════════════════════════════════
+const TOTAL = @Model.Count;
+
+function onTypeChange() {
+    const type     = document.getElementById('fType').value;
+    const expInput = document.getElementById('fExpYear');
+    const expLabel = document.getElementById('fExpLabel');
+    const lockTip  = document.getElementById('expLockTip');
+    if (type === 'experienced') {
+        expInput.disabled = false;
+        expInput.placeholder = 'e.g. 2';
+        expLabel.style.color = '#6a737d';
+        lockTip.classList.remove('visible');
+    } else {
+        expInput.disabled = true;
+        expInput.value = '';
+        expLabel.style.color = '#9ca3af';
+        lockTip.classList.add('visible');
+    }
+    applyFilters();
+}
+
+function validateExpInput(input) {
+    let v = input.value.replace(/[^0-9.]/g, '');
+    const parts = v.split('.');
+    if (parts.length > 2) v = parts[0] + '.' + parts.slice(1).join('');
+    input.value = v;
+}
+
+function blockNonNumeric(e) {
+    const allowed = ['Backspace','Delete','Tab','Escape','Enter','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','.'];
+    if (allowed.includes(e.key) || (e.key >= '0' && e.key <= '9')) return;
+    e.preventDefault();
+}
+
+function applyFilters() {
+    const fMatchType = (document.getElementById('fMatchType')?.value || '').toLowerCase();
+    const fType      = (document.getElementById('fType')?.value      || '').toLowerCase();
+    const fExpRaw    = document.getElementById('fExpYear')?.value.trim();
+    const fExpYear   = fExpRaw !== '' ? parseFloat(fExpRaw) : null;
+    const fMin       = parseFloat(document.getElementById('fMinScore')?.value) || 0;
+    const fLoc       = (document.getElementById('fLocation')?.value  || '').toLowerCase().trim();
+    const fDateFrom  = document.getElementById('fDateFrom')?.value  || '';
+    const fDateTo    = document.getElementById('fDateTo')?.value    || '';
+
+    let visible = 0;
+
+    document.querySelectorAll('#resultsTable tbody tr[id^="arow-"]').forEach(row => {
+        const type     = (row.dataset.type     || '').toLowerCase();
+        const status   = (row.dataset.status   || '').toLowerCase();
+        const score    = parseFloat(row.dataset.score)    || 0;
+        const loc      = (row.dataset.loc      || '').toLowerCase();
+        const expYears = parseFloat(row.dataset.expYears) || 0;
+        const date     = row.dataset.date || '';
+
+        let show = true;
+
+        if (fMatchType && !status.includes(fMatchType)) show = false;
+        if (fType && type !== fType) show = false;
+
+        if (fExpYear !== null && !isNaN(fExpYear)) {
+            if (type !== 'experienced') show = false;
+            else if (expYears < fExpYear - 0.4) show = false;
+        }
+
+        if (fMin && score < fMin) show = false;
+        if (fLoc && !loc.includes(fLoc)) show = false;
+        if (fDateFrom && date < fDateFrom) show = false;
+        if (fDateTo   && date > fDateTo)   show = false;
+
+        const det = document.getElementById('adet-' + row.id.replace('arow-', ''));
+        row.style.display = show ? '' : 'none';
+        if (det && !show) det.style.display = 'none';
+
+        if (show) visible++;
+    });
+
+    const vc = document.getElementById('visibleCount');
+    if (vc) vc.textContent = visible;
+}
+
+function resetFilters() {
+    ['fMatchType','fType'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    ['fExpYear','fMinScore','fLocation','fDateFrom','fDateTo'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    const expInput = document.getElementById('fExpYear');
+    const expLabel = document.getElementById('fExpLabel');
+    const lockTip  = document.getElementById('expLockTip');
+    if (expInput) expInput.disabled = true;
+    if (expLabel) expLabel.style.color = '#9ca3af';
+    if (lockTip)  lockTip.classList.add('visible');
+    applyFilters();
+}
+
+function toggleDetail(id, btn) {
+    const row = document.getElementById(id);
+    if (!row) return;
+    const show = row.style.display === 'none';
+    row.style.display = show ? '' : 'none';
+    btn.textContent = show ? '▲' : '▼';
+}
+</script>
+</body>
+</html>
